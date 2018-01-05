@@ -14,6 +14,10 @@ window.onload = function() {
 
   // Add the containers to our HTML page
   document.getElementById('bb-main-display').appendChild(Game.getDisplay('main').getContainer());
-
+  Game.bindEvent('keypress');
+  Game.bindEvent('keydown');
+  Game.bindEvent('keyup');
+  console.log("Game object:");
+  console.dir(Game);
   Game.render();
 };

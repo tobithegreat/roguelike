@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartUpMode} from './ui_mode.js';
+import {StartUpMode, PlayMode, WinMode, LoseMode} from './ui_mode.js';
 
 export let Game = {
   modes: {
@@ -10,6 +10,7 @@ export let Game = {
     lose: ''
   },
 
+  curMode: '',
   display: {
     SPACING: 1.1,
     main: {
@@ -31,7 +32,7 @@ export let Game = {
       spacing: this.display.SPACING});
 
     this.setupModes();
-    this.switchMode('startup');
+    this.switchMode('start');
   },
 
   getDisplay: function (displayId) {
@@ -46,7 +47,10 @@ export let Game = {
   },
 
   setupModes: function() {
-    this.modes.startup = new StartUpMode();
+    this.modes.start = new StartUpMode(this);
+    this.modes.play = new PlayMode(this);
+    this.modes.win = new WinMode(this);
+    this.modes.lose = new LoseMode(this);
   },
 
   switchMode: function(newModeName) {
@@ -64,6 +68,22 @@ export let Game = {
     // for (let i = 0; i < 10; i++) {
     //   d.drawText(5,i+5,"hello world");
     // }
+  },
+
+  bindEvent: function(eventType) {
+    window.addEventListener(eventType, (evt) => {
+      this.eventHandler(eventType, evt);
+    });
+  },
+
+  eventHandler: function (eventType, evt) {
+    // When an event is received have the current ui handle it
+    if (this.curMode !== null && this.curMode != '') {
+      if (this.curMode.handleInput(eventType, evt)) {
+        this.render();
+        //Message.ageMessages();
+      }
+    }
   },
 
 

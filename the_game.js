@@ -9366,7 +9366,11 @@ window.onload = function () {
 
   // Add the containers to our HTML page
   document.getElementById('bb-main-display').appendChild(_game.Game.getDisplay('main').getContainer());
-
+  _game.Game.bindEvent('keypress');
+  _game.Game.bindEvent('keydown');
+  _game.Game.bindEvent('keyup');
+  console.log("Game object:");
+  console.dir(_game.Game);
   _game.Game.render();
 };
 
@@ -14900,6 +14904,7 @@ var Game = exports.Game = {
     lose: ''
   },
 
+  curMode: '',
   display: {
     SPACING: 1.1,
     main: {
@@ -14921,7 +14926,7 @@ var Game = exports.Game = {
       spacing: this.display.SPACING });
 
     this.setupModes();
-    this.switchMode('startup');
+    this.switchMode('start');
   },
 
   getDisplay: function getDisplay(displayId) {
@@ -14936,7 +14941,10 @@ var Game = exports.Game = {
   },
 
   setupModes: function setupModes() {
-    this.modes.startup = new _ui_mode.StartUpMode();
+    this.modes.start = new _ui_mode.StartUpMode(this);
+    this.modes.play = new _ui_mode.PlayMode(this);
+    this.modes.win = new _ui_mode.WinMode(this);
+    this.modes.lose = new _ui_mode.LoseMode(this);
   },
 
   switchMode: function switchMode(newModeName) {
@@ -14953,6 +14961,24 @@ var Game = exports.Game = {
     // for (let i = 0; i < 10; i++) {
     //   d.drawText(5,i+5,"hello world");
     // }
+  },
+
+  bindEvent: function bindEvent(eventType) {
+    var _this = this;
+
+    window.addEventListener(eventType, function (evt) {
+      _this.eventHandler(eventType, evt);
+    });
+  },
+
+  eventHandler: function eventHandler(eventType, evt) {
+    // When an event is received have the current ui handle it
+    if (this.curMode !== null && this.curMode != '') {
+      if (this.curMode.handleInput(eventType, evt)) {
+        this.render();
+        //Message.ageMessages();
+      }
+    }
   }
 
 };
@@ -14987,6 +15013,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -14996,10 +15024,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var UIMode = function () {
-  function UIMode() {
+  function UIMode(thegame) {
     _classCallCheck(this, UIMode);
 
     console.log("created " + this.constructor.name);
+    this.game = thegame;
   }
 
   _createClass(UIMode, [{
@@ -15014,8 +15043,12 @@ var UIMode = function () {
     }
   }, {
     key: "handleInput",
-    value: function handleInput() {
-      console.log("");
+    value: function handleInput(eventType, evt) {
+      if (eventType == 'keyup') {
+        console.dir(this);
+        this.game.curMode = new PlayMode(this);
+      }
+      return true;
     }
   }, {
     key: "render",
@@ -15033,10 +15066,131 @@ var StartUpMode = exports.StartUpMode = function (_UIMode) {
   function StartUpMode() {
     _classCallCheck(this, StartUpMode);
 
-    return _possibleConstructorReturn(this, (StartUpMode.__proto__ || Object.getPrototypeOf(StartUpMode)).call(this));
+    return _possibleConstructorReturn(this, (StartUpMode.__proto__ || Object.getPrototypeOf(StartUpMode)).apply(this, arguments));
   }
 
+  _createClass(StartUpMode, [{
+    key: "enter",
+    value: function enter() {
+      _get(StartUpMode.prototype.__proto__ || Object.getPrototypeOf(StartUpMode.prototype), "enter", this).call(this);
+      console.log("game starting");
+    }
+  }, {
+    key: "render",
+    value: function render(display) {
+      display.clear();
+      display.drawText(1, 1, "game starting");
+      display.drawText(1, 2, "press any key to play");
+    }
+  }, {
+    key: "handleInput",
+    value: function handleInput(eventType, evt) {
+      if (eventType == 'keyup') {
+        console.dir(this);
+        this.game.curMode = new PlayMode(this);
+      }
+      return true;
+    }
+  }]);
+
   return StartUpMode;
+}(UIMode);
+
+var PlayMode = exports.PlayMode = function (_UIMode2) {
+  _inherits(PlayMode, _UIMode2);
+
+  function PlayMode() {
+    _classCallCheck(this, PlayMode);
+
+    return _possibleConstructorReturn(this, (PlayMode.__proto__ || Object.getPrototypeOf(PlayMode)).apply(this, arguments));
+  }
+
+  _createClass(PlayMode, [{
+    key: "enter",
+    value: function enter() {
+      _get(PlayMode.prototype.__proto__ || Object.getPrototypeOf(PlayMode.prototype), "enter", this).call(this);
+      console.log("game playing");
+    }
+  }, {
+    key: "render",
+    value: function render(display) {
+      display.clear();
+      display.drawText(1, 1, "game play");
+      display.drawText(1, 2, "press Enter to win");
+      display.drawText(1, 3, "press Escape to lose");
+    }
+  }, {
+    key: "handleInput",
+    value: function handleInput(eventType, evt) {
+      if (eventType == 'keyup') {
+        if (String.fromCharCode(evt.key) == "h") {
+          this.game.curMode = new WinMode(this);
+        }
+      }
+      return true;
+    }
+  }]);
+
+  return PlayMode;
+}(UIMode);
+
+var WinMode = exports.WinMode = function (_UIMode3) {
+  _inherits(WinMode, _UIMode3);
+
+  function WinMode() {
+    _classCallCheck(this, WinMode);
+
+    return _possibleConstructorReturn(this, (WinMode.__proto__ || Object.getPrototypeOf(WinMode)).apply(this, arguments));
+  }
+
+  _createClass(WinMode, [{
+    key: "enter",
+    value: function enter() {
+      _get(WinMode.prototype.__proto__ || Object.getPrototypeOf(WinMode.prototype), "enter", this).call(this);
+      console.log("game win");
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      display.clear();
+      this.display.drawText(1, 1, "game win");
+      this.display.drawText(1, 1, "YOU WON");
+    }
+  }, {
+    key: "handleInput",
+    value: function handleInput(inputType, inputData) {}
+  }]);
+
+  return WinMode;
+}(UIMode);
+
+var LoseMode = exports.LoseMode = function (_UIMode4) {
+  _inherits(LoseMode, _UIMode4);
+
+  function LoseMode() {
+    _classCallCheck(this, LoseMode);
+
+    return _possibleConstructorReturn(this, (LoseMode.__proto__ || Object.getPrototypeOf(LoseMode)).apply(this, arguments));
+  }
+
+  _createClass(LoseMode, [{
+    key: "enter",
+    value: function enter() {
+      _get(LoseMode.prototype.__proto__ || Object.getPrototypeOf(LoseMode.prototype), "enter", this).call(this);
+      console.log("game lose");
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      this.display.drawText(1, 1, "game lost");
+      this.display.drawText(1, 1, "YOU LOST");
+    }
+  }, {
+    key: "handleInput",
+    value: function handleInput(inputType, inputData) {}
+  }]);
+
+  return LoseMode;
 }(UIMode);
 
 /***/ })
