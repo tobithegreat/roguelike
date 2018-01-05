@@ -54,6 +54,7 @@ export let Game = {
   },
 
   switchMode: function(newModeName) {
+    console.log("SWITCH");
       if (this.curMode) {
         this.curMode.exit();
       }

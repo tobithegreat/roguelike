@@ -14,7 +14,7 @@ class UIMode {
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
       console.dir(this);
-     this.game.curMode = new PlayMode(this);
+     this.game.switchMode('play');
     }
     return true;
   }
@@ -40,7 +40,7 @@ export class StartUpMode extends UIMode {
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
       console.dir(this);
-     this.game.curMode = new PlayMode(this);
+    this.game.switchMode('play');
     }
     return true;
   }
@@ -61,8 +61,9 @@ export class PlayMode extends UIMode {
 
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
-      if (String.fromCharCode(evt.key) == "h") {
-        this.game.curMode = new WinMode(this);
+      if (evt.key == "h") {
+        console.dir(this);
+        this.game.switchMode('win');
       }
     }
     return true;
@@ -75,10 +76,10 @@ export class WinMode extends UIMode {
     console.log("game win");
   }
 
-  render() {
+  render(display) {
     display.clear();
-    this.display.drawText(1,1,"game win");
-    this.display.drawText(1,1,"YOU WON");
+    display.drawText(1,1,"game win");
+    display.drawText(1,2,"YOU WON");
   }
 
   handleInput(inputType, inputData) {

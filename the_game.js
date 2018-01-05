@@ -14948,6 +14948,7 @@ var Game = exports.Game = {
   },
 
   switchMode: function switchMode(newModeName) {
+    console.log("SWITCH");
     if (this.curMode) {
       this.curMode.exit();
     }
@@ -15046,7 +15047,7 @@ var UIMode = function () {
     value: function handleInput(eventType, evt) {
       if (eventType == 'keyup') {
         console.dir(this);
-        this.game.curMode = new PlayMode(this);
+        this.game.switchMode('play');
       }
       return true;
     }
@@ -15087,7 +15088,7 @@ var StartUpMode = exports.StartUpMode = function (_UIMode) {
     value: function handleInput(eventType, evt) {
       if (eventType == 'keyup') {
         console.dir(this);
-        this.game.curMode = new PlayMode(this);
+        this.game.switchMode('play');
       }
       return true;
     }
@@ -15123,8 +15124,9 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: "handleInput",
     value: function handleInput(eventType, evt) {
       if (eventType == 'keyup') {
-        if (String.fromCharCode(evt.key) == "h") {
-          this.game.curMode = new WinMode(this);
+        if (evt.key == "h") {
+          console.dir(this);
+          this.game.switchMode('win');
         }
       }
       return true;
@@ -15151,10 +15153,10 @@ var WinMode = exports.WinMode = function (_UIMode3) {
     }
   }, {
     key: "render",
-    value: function render() {
+    value: function render(display) {
       display.clear();
-      this.display.drawText(1, 1, "game win");
-      this.display.drawText(1, 1, "YOU WON");
+      display.drawText(1, 1, "game win");
+      display.drawText(1, 2, "YOU WON");
     }
   }, {
     key: "handleInput",
