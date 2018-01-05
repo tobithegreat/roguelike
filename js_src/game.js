@@ -1,9 +1,14 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import ROT from 'rot-js';
-import {StartUpMode} from './ui-mode.js';
+import {StartUpMode} from './ui_mode.js';
 
 export let Game = {
+  modes: {
+    start: '',
+    play: '',
+    win: '',
+    lose: ''
+  },
 
   display: {
     SPACING: 1.1,
@@ -24,6 +29,9 @@ export let Game = {
       width: this.display.main.w,
       height: this.display.main.h,
       spacing: this.display.SPACING});
+
+    this.setupModes();
+    this.switchMode('startup');
   },
 
   getDisplay: function (displayId) {
@@ -51,18 +59,14 @@ export let Game = {
 
 
   renderMain: function() {
-    if (this.curMode.hasOwnProperty('render')) {
-      this.curMode.render(this.display.main.o);
-    }
+    this.curMode.render(this.display.main.o);
     // let d = this.display.main.o;
     // for (let i = 0; i < 10; i++) {
     //   d.drawText(5,i+5,"hello world");
     // }
+  },
 
-  }
 
-  this.setupModes();
-  this.switchMode('startup');
 };
 
 
