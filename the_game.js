@@ -9410,6 +9410,7 @@ window.onload = function () {
   _game.Game.init();
 
   // Add the containers to our HTML page
+  document.getElementById('bb-avatar-display').appendChild(_game.Game.getDisplay('avatar').getContainer());
   document.getElementById('bb-main-display').appendChild(_game.Game.getDisplay('main').getContainer());
   document.getElementById('bb-message-display').appendChild(_game.Game.getDisplay('message').getContainer());
   _game.Game.bindEvent('keypress');
@@ -14974,23 +14975,7 @@ var Game = exports.Game = {
   },
 
   init: function init() {
-    this._randomSeed = 5 + Math.floor(Math.random() * 100000);
-    //this._randomSeed = 76250;
-    console.log("using random seed " + this._randomSeed);
-    _rotJs2.default.RNG.setSeed(this._randomSeed);
-
-    this.display.main.o = new _rotJs2.default.Display({
-      width: this.display.main.w,
-      height: this.display.main.h,
-      spacing: this.display.SPACING
-    });
-
-    this.display.message.o = new _rotJs2.default.Display({
-      width: this.display.message.w,
-      height: this.display.message.h,
-      spacing: this.display.SPACING
-    });
-
+    this.setupNewGame();
     this.setupModes();
     _message.Message.send("This is a message");
     this.switchMode('start');
@@ -15004,12 +14989,13 @@ var Game = exports.Game = {
   },
 
   render: function render() {
+    this.renderAvatar();
     this.renderMain();
     this.renderMessage();
   },
 
-  renderDisplayAvatar: function renderDisplayAvatar() {
-    var d = this._display.avatar.o;
+  renderAvatar: function renderAvatar() {
+    var d = this.display.avatar.o;
     for (var i = 0; i < 10; i++) {
       d.drawText(5, i + 5, "avatar");
     }
@@ -15045,6 +15031,31 @@ var Game = exports.Game = {
     this.curMode.enter();
   },
 
+  setupNewGame: function setupNewGame() {
+    this._randomSeed = 5 + Math.floor(Math.random() * 100000);
+    //this._randomSeed = 76250;
+    console.log("using random seed " + this._randomSeed);
+    _rotJs2.default.RNG.setSeed(this._randomSeed);
+
+    this.display.main.o = new _rotJs2.default.Display({
+      width: this.display.main.w,
+      height: this.display.main.h,
+      spacing: this.display.SPACING
+    });
+
+    this.display.message.o = new _rotJs2.default.Display({
+      width: this.display.message.w,
+      height: this.display.message.h,
+      spacing: this.display.SPACING
+    });
+
+    this.display.avatar.o = new _rotJs2.default.Display({
+      width: this.display.avatar.w,
+      height: this.display.avatar.h,
+      spacing: this.display.SPACING
+    });
+  },
+
   renderMain: function renderMain() {
     console.log("renderMessage");
     this.curMode.render(this.display.main.o);
@@ -15070,8 +15081,19 @@ var Game = exports.Game = {
         //Message.ageMessages();
       }
     }
-  }
+  },
 
+  toJSON: function toJSON() {
+    var json = '';
+    json = JSON.stringify({ rseed: this._randomSeed });
+    return json;
+  },
+
+  fromJSON: function fromJSON(json) {
+    console.log('game from json processing: ' + json);
+    var state = JSON.parse(json);
+    this._randomSeed = state.rseed;
+  }
 };
 
 //init
@@ -15319,16 +15341,50 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       if (eventType == 'keyup') {
 
         if (evt.key == "N".toLowerCase()) {
+          this.game.setupNewGame();
           console.dir("New Game");
         } else if (evt.key == "S".toLowerCase()) {
+          this.handleSave();
           console.dir("Save Game");
         } else if (evt.key == "L".toLowerCase()) {
-          console.dir("Load Game");
+          this.handleRestore();
         } else if (evt.key == "Escape") {
           console.dir("End Game");
         }
       }
       return true;
+    }
+  }, {
+    key: "handleSave",
+    value: function handleSave() {
+      console.log("save game");
+      if (!this.localStorageAvailable()) {
+        return false;
+      }
+      window.localStorage.setItem('bbsavegame', this.game.toJSON());
+    }
+  }, {
+    key: "handleRestore",
+    value: function handleRestore() {
+      console.log("load game");
+      if (!this.localStorageAvailable()) {
+        return false;
+      }
+      var restorationString = window.localStorage.getItem('bbsavegame');
+      console.log(restorationString);
+    }
+  }, {
+    key: "localStorageAvailable",
+    value: function localStorageAvailable() {
+      try {
+        var x = '__storage_test__';
+        window.localStorage.setItem(x, x);
+        window.localStorage.removeItem(x);
+        return true;
+      } catch (e) {
+        this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
+        return false;
+      }
     }
   }]);
 

@@ -13,6 +13,7 @@ window.onload = function() {
   Game.init();
 
   // Add the containers to our HTML page
+  document.getElementById('bb-avatar-display').appendChild(Game.getDisplay('avatar').getContainer());
   document.getElementById('bb-main-display').appendChild(Game.getDisplay('main').getContainer());
   document.getElementById('bb-message-display').appendChild(Game.getDisplay('message').getContainer());
   Game.bindEvent('keypress');

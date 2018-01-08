@@ -124,13 +124,15 @@ export class PersistenceMode extends UIMode {
     if (eventType == 'keyup') {
 
       if (evt.key == "N".toLowerCase()) {
+        this.game.setupNewGame();
         console.dir("New Game");
       }
       else if (evt.key == "S".toLowerCase()) {
+        this.handleSave();
         console.dir("Save Game");
       }
       else if (evt.key == "L".toLowerCase()) {
-        console.dir("Load Game");
+        this.handleRestore();
       }
       else if (evt.key == "Escape") {
         console.dir("End Game");
@@ -138,4 +140,36 @@ export class PersistenceMode extends UIMode {
     }
     return true;
   }
+
+  handleSave() {
+    console.log("save game");
+    if (!this.localStorageAvailable()) {
+      return false;
+    }
+    window.localStorage.setItem('bbsavegame', this.game.toJSON());
+  }
+
+  handleRestore() {
+    console.log("load game");
+    if (!this.localStorageAvailable()) {
+      return false;
+    }
+    let restorationString = window.localStorage.getItem('bbsavegame');
+    console.log(restorationString);
+  }
+
+  localStorageAvailable() {
+    try {
+      var x = '__storage_test__';
+      window.localStorage.setItem( x, x);
+      window.localStorage.removeItem(x);
+      return true;
+    }
+    catch(e) {
+      this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
+      return false;
+    }
+  }
+
+
 }
