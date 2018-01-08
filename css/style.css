@@ -16,9 +16,11 @@
 
 #bb-main-display {
   padding-top: 8px;
+  background-color: blue;
 }
 
 #bb-message-display {
+  background-color: red;
   clear: both;
   margin-top: -4px;
   padding-left: 8px;

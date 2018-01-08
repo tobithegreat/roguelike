@@ -9352,14 +9352,14 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Message = function () {
-  function Message() {
-    _classCallCheck(this, Message);
+var GameMessage = function () {
+  function GameMessage() {
+    _classCallCheck(this, GameMessage);
 
     this.message = '';
   }
 
-  _createClass(Message, [{
+  _createClass(GameMessage, [{
     key: 'render',
     value: function render(targetDisplay) {
       targetDisplay.clear();
@@ -9377,10 +9377,10 @@ var Message = function () {
     }
   }]);
 
-  return Message;
+  return GameMessage;
 }();
 
-var GameMessage = exports.GameMessage = new Message();
+var Message = exports.Message = new GameMessage();
 
 /***/ }),
 /* 127 */
@@ -14947,6 +14947,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Game = exports.Game = {
   modes: {
     start: '',
+    persistence: '',
     play: '',
     win: '',
     lose: ''
@@ -14991,7 +14992,7 @@ var Game = exports.Game = {
     });
 
     this.setupModes();
-    _message.GameMessage.send("This is a message");
+    _message.Message.send("This is a message");
     this.switchMode('start');
   },
 
@@ -15025,11 +15026,12 @@ var Game = exports.Game = {
 
   renderMessage: function renderMessage() {
     console.log("render Message");
-    _message.GameMessage.render(this.display.message.o);
+    _message.Message.render(this.display.message.o);
   },
 
   setupModes: function setupModes() {
     this.modes.start = new _ui_mode.StartUpMode(this);
+    this.modes.persistence = new _ui_mode.PersistenceMode(this);
     this.modes.play = new _ui_mode.PlayMode(this);
     this.modes.win = new _ui_mode.WinMode(this);
     this.modes.lose = new _ui_mode.LoseMode(this);
@@ -15101,7 +15103,7 @@ function utilAlert() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.LoseMode = exports.WinMode = exports.PlayMode = exports.StartUpMode = undefined;
+exports.PersistenceMode = exports.LoseMode = exports.WinMode = exports.PlayMode = exports.StartUpMode = undefined;
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
@@ -15127,7 +15129,7 @@ var UIMode = function () {
     key: "enter",
     value: function enter() {
       console.log("entering " + this.constructor.name);
-      _message.GameMessage.send("entering " + this.constructor.name);
+      _message.Message.send("entering " + this.constructor.name);
     }
   }, {
     key: "exit",
@@ -15180,7 +15182,7 @@ var StartUpMode = exports.StartUpMode = function (_UIMode) {
     value: function handleInput(eventType, evt) {
       if (eventType == 'keyup') {
         console.dir(this);
-        this.game.switchMode('play');
+        this.game.switchMode('persistence');
       }
       return true;
     }
@@ -15285,6 +15287,52 @@ var LoseMode = exports.LoseMode = function (_UIMode4) {
   }]);
 
   return LoseMode;
+}(UIMode);
+
+var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
+  _inherits(PersistenceMode, _UIMode5);
+
+  function PersistenceMode() {
+    _classCallCheck(this, PersistenceMode);
+
+    return _possibleConstructorReturn(this, (PersistenceMode.__proto__ || Object.getPrototypeOf(PersistenceMode)).apply(this, arguments));
+  }
+
+  _createClass(PersistenceMode, [{
+    key: "enter",
+    value: function enter() {
+      _get(PersistenceMode.prototype.__proto__ || Object.getPrototypeOf(PersistenceMode.prototype), "enter", this).call(this);
+      console.log("game in persistence");
+    }
+  }, {
+    key: "render",
+    value: function render(display) {
+      display.clear();
+      display.drawText(3, 2, "N for new game");
+      display.drawText(3, 3, "S to save game");
+      display.drawText(3, 4, "L to load previously saved game");
+      display.drawText(3, 5, "ESC to end game");
+    }
+  }, {
+    key: "handleInput",
+    value: function handleInput(eventType, evt) {
+      if (eventType == 'keyup') {
+
+        if (evt.key == "N".toLowerCase()) {
+          console.dir("New Game");
+        } else if (evt.key == "S".toLowerCase()) {
+          console.dir("Save Game");
+        } else if (evt.key == "L".toLowerCase()) {
+          console.dir("Load Game");
+        } else if (evt.key == "Escape") {
+          console.dir("End Game");
+        }
+      }
+      return true;
+    }
+  }]);
+
+  return PersistenceMode;
 }(UIMode);
 
 /***/ })

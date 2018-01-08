@@ -1,11 +1,12 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartUpMode, PlayMode, WinMode, LoseMode} from './ui_mode.js';
-import {GameMessage} from './message.js';
+import {StartUpMode, PersistenceMode, PlayMode, WinMode, LoseMode} from './ui_mode.js';
+import {Message} from './message.js';
 
 export let Game = {
   modes: {
     start: '',
+    persistence: '',
     play: '',
     win: '',
     lose: ''
@@ -50,7 +51,7 @@ export let Game = {
       });
 
     this.setupModes();
-    GameMessage.send("This is a message");
+    Message.send("This is a message");
     this.switchMode('start');
   },
 
@@ -84,11 +85,12 @@ export let Game = {
 
   renderMessage: function() {
     console.log("render Message");
-    GameMessage.render(this.display.message.o);
+    Message.render(this.display.message.o);
   },
 
   setupModes: function() {
     this.modes.start = new StartUpMode(this);
+    this.modes.persistence = new PersistenceMode(this);
     this.modes.play = new PlayMode(this);
     this.modes.win = new WinMode(this);
     this.modes.lose = new LoseMode(this);

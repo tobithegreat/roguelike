@@ -1,4 +1,4 @@
-class Message {
+class GameMessage {
   constructor() {
     this.message = '';
   }
@@ -18,4 +18,4 @@ class Message {
 
 }
 
- export let GameMessage = new Message();
+ export let Message = new GameMessage();

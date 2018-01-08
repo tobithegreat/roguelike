@@ -1,4 +1,4 @@
-import {GameMessage} from './message.js';
+import {Message} from './message.js';
 
 class UIMode {
   constructor(thegame) {
@@ -7,7 +7,7 @@ class UIMode {
   }
   enter() {
     console.log("entering "+this.constructor.name);
-    GameMessage.send("entering "+this.constructor.name);
+    Message.send("entering "+this.constructor.name);
   }
 
   exit() {
@@ -43,7 +43,7 @@ export class StartUpMode extends UIMode {
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
       console.dir(this);
-    this.game.switchMode('play');
+    this.game.switchMode('persistence');
     }
     return true;
   }
@@ -61,6 +61,7 @@ export class PlayMode extends UIMode {
     display.drawText(1,2,"press Enter to win");
     display.drawText(1,3,"press Escape to lose");
   }
+
 
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
@@ -101,5 +102,40 @@ export class LoseMode extends UIMode {
   }
 
   handleInput(inputType, inputData) {
+  }
+}
+
+
+export class PersistenceMode extends UIMode {
+  enter() {
+    super.enter();
+    console.log("game in persistence");
+  }
+
+  render(display) {
+    display.clear();
+    display.drawText(3,2,"N for new game");
+    display.drawText(3,3,"S to save game");
+    display.drawText(3,4,"L to load previously saved game");
+    display.drawText(3,5,"ESC to end game");
+  }
+
+  handleInput(eventType, evt) {
+    if (eventType == 'keyup') {
+
+      if (evt.key == "N".toLowerCase()) {
+        console.dir("New Game");
+      }
+      else if (evt.key == "S".toLowerCase()) {
+        console.dir("Save Game");
+      }
+      else if (evt.key == "L".toLowerCase()) {
+        console.dir("Load Game");
+      }
+      else if (evt.key == "Escape") {
+        console.dir("End Game");
+      }
+    }
+    return true;
   }
 }
