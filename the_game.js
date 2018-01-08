@@ -9368,6 +9368,7 @@ var GameMessage = function () {
   }, {
     key: 'send',
     value: function send(msg) {
+      this.message = '';
       this.message = msg;
     }
   }, {
@@ -15343,13 +15344,18 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         if (evt.key == "N".toLowerCase()) {
           this.game.setupNewGame();
           console.dir("New Game");
+          return true;
         } else if (evt.key == "S".toLowerCase()) {
           this.handleSave();
           console.dir("Save Game");
+          return true;
         } else if (evt.key == "L".toLowerCase()) {
           this.handleRestore();
+
+          return true;
         } else if (evt.key == "Escape") {
           console.dir("End Game");
+          return true;
         }
       }
       return true;
@@ -15357,11 +15363,11 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
   }, {
     key: "handleSave",
     value: function handleSave() {
-      console.log("save game");
       if (!this.localStorageAvailable()) {
         return false;
       }
       window.localStorage.setItem('bbsavegame', this.game.toJSON());
+      _message.Message.send("Game Saved");
     }
   }, {
     key: "handleRestore",
@@ -15371,7 +15377,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         return false;
       }
       var restorationString = window.localStorage.getItem('bbsavegame');
-      console.log(restorationString);
+      _message.Message.send("Game Saved. Restoration String is: " + restorationString);
     }
   }, {
     key: "localStorageAvailable",

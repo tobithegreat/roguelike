@@ -126,27 +126,32 @@ export class PersistenceMode extends UIMode {
       if (evt.key == "N".toLowerCase()) {
         this.game.setupNewGame();
         console.dir("New Game");
+        return true;
       }
       else if (evt.key == "S".toLowerCase()) {
         this.handleSave();
         console.dir("Save Game");
+        return true;
       }
       else if (evt.key == "L".toLowerCase()) {
         this.handleRestore();
+
+        return true;
       }
       else if (evt.key == "Escape") {
         console.dir("End Game");
+        return true;
       }
     }
     return true;
   }
 
   handleSave() {
-    console.log("save game");
     if (!this.localStorageAvailable()) {
       return false;
     }
     window.localStorage.setItem('bbsavegame', this.game.toJSON());
+    Message.send("Game Saved");
   }
 
   handleRestore() {
@@ -155,7 +160,7 @@ export class PersistenceMode extends UIMode {
       return false;
     }
     let restorationString = window.localStorage.getItem('bbsavegame');
-    console.log(restorationString);
+    Message.send("Game Saved. Restoration String is: " + restorationString);
   }
 
   localStorageAvailable() {

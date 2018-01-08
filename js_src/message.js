@@ -9,6 +9,7 @@ class GameMessage {
   }
 
   send(msg) {
+    this.message = '';
     this.message = msg;
   }
 
