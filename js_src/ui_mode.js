@@ -1,3 +1,5 @@
+import {GameMessage} from './message.js';
+
 class UIMode {
   constructor(thegame) {
     console.log("created "+this.constructor.name);
@@ -5,6 +7,7 @@ class UIMode {
   }
   enter() {
     console.log("entering "+this.constructor.name);
+    GameMessage.send("entering "+this.constructor.name);
   }
 
   exit() {

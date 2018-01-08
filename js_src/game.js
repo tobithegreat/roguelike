@@ -1,6 +1,7 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartUpMode, PlayMode, WinMode, LoseMode} from './ui_mode.js';
+import {GameMessage} from './message.js';
 
 export let Game = {
   modes: {
@@ -17,6 +18,16 @@ export let Game = {
       w: 80,
       h: 24,
       o: null
+    },
+    avatar: {
+      w: 20,
+      h: 24,
+      o: null
+    },
+    message: {
+      w: 100,
+      h: 6,
+      o: null
     }
   },
 
@@ -29,9 +40,17 @@ export let Game = {
     this.display.main.o = new ROT.Display({
       width: this.display.main.w,
       height: this.display.main.h,
-      spacing: this.display.SPACING});
+      spacing: this.display.SPACING
+    });
+
+      this.display.message.o = new ROT.Display({
+        width: this.display.message.w,
+        height: this.display.message.h,
+        spacing: this.display.SPACING
+      });
 
     this.setupModes();
+    GameMessage.send("This is a message");
     this.switchMode('start');
   },
 
@@ -44,6 +63,28 @@ export let Game = {
 
   render: function() {
     this.renderMain();
+    this.renderMessage();
+  },
+
+  renderDisplayAvatar: function() {
+    let d = this._display.avatar.o;
+    for (let i = 0; i < 10; i++) {
+      d.drawText(5,i+5,"avatar");
+    }
+  },
+
+  renderDisplayMain: function() {
+    this._display.main.o.clear();
+    if (this._curMode === null || this._curMode == '') {
+      return;
+    } else {
+      this._curMode.render();
+    }
+  },
+
+  renderMessage: function() {
+    console.log("render Message");
+    GameMessage.render(this.display.message.o);
   },
 
   setupModes: function() {
@@ -54,7 +95,6 @@ export let Game = {
   },
 
   switchMode: function(newModeName) {
-    console.log("SWITCH");
       if (this.curMode) {
         this.curMode.exit();
       }
@@ -64,6 +104,7 @@ export let Game = {
 
 
   renderMain: function() {
+    console.log("renderMessage");
     this.curMode.render(this.display.main.o);
     // let d = this.display.main.o;
     // for (let i = 0; i < 10; i++) {
