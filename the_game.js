@@ -15148,6 +15148,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _message = __webpack_require__(127);
 
+var _displaySymbol = __webpack_require__(336);
+
 var _Map = __webpack_require__(334);
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -15173,6 +15175,7 @@ var UIMode = function () {
   }, {
     key: 'exit',
     value: function exit() {
+      _message.Message.clear();
       console.log("exiting " + this.constructor.name);
     }
   }, {
@@ -15242,10 +15245,14 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   _createClass(PlayMode, [{
     key: 'enter',
     value: function enter() {
+      _message.Message.send("entering PLAY");
       if (!this.map) {
         console.log("MAP");
-        this.map = new _Map.Map(40, 24);
+        this.map = new _Map.Map(200, 200);
       }
+      this.camerax = 5;
+      this.cameray = 10;
+      this.cameraSymbol = new _displaySymbol.DisplaySymbol('#', '#es4');
     }
   }, {
     key: 'render',
@@ -15254,7 +15261,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.drawText(1, 1, "game play");
       display.drawText(1, 2, "press Enter to win");
       display.drawText(1, 3, "press Escape to lose");
-      this.map.render(display, 0, 0);
+      this.map.render(display, this.camerax, this.cameray);
+      this.cameraSymbol.render(display, display.getOptions().width, display.getOptions().height);
     }
   }, {
     key: 'handleInput',
@@ -15263,9 +15271,21 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         if (evt.key == "h") {
           console.dir(this);
           this.game.switchMode('win');
+        } else if (evt.key == '7') {
+          this.moveCamera(-1, -1);
+          return true;
+        } else if (evt.key == '3') {
+          this.moveCamera(1, 1);
+          return true;
         }
       }
       return true;
+    }
+  }, {
+    key: 'moveCamera',
+    value: function moveCamera(dx, dy) {
+      this.camerax += dx;
+      this.cameray += dy;
     }
   }]);
 
@@ -15397,7 +15417,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         return false;
       }
       var restorationString = window.localStorage.getItem('bbsavegame');
-      _message.Message.send("Game Saved. Restoration String is: " + restorationString);
+      _message.Message.send("Game Loaded. Restoration String is: " + restorationString);
     }
   }, {
     key: 'localStorageAvailable',
@@ -15408,7 +15428,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         window.localStorage.removeItem(x);
         return true;
       } catch (e) {
-        this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
+        _message.Message.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
         return false;
       }
     }
@@ -15450,23 +15470,36 @@ var Map = exports.Map = function () {
     this.xdim = xdim || 1;
     this.ydim = ydim || 1;
     //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
-    this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.xdim, this.ydim);
+    this.tileGrid = TILE_GRID_GENERATOR['basic types'](xdim, ydim);
   }
 
   _createClass(Map, [{
     key: 'render',
-    value: function render(display, camera_x, camera_y) {
+    value: function render(display, camera_map_x, camera_map_y) {
       console.log("RENDER");
       var cx = 0;
       var cy = 0;
-      for (var xi = 0; xi < this.xdim; xi++) {
-        for (var yi = 0; yi < this.ydim; yi++) {
-          this.tileGrid[xi][yi].render(display, cx, cy);
+      var xstart = camera_map_x - Math.trunc(display.getOptions().width / 2);
+      var xend = xstart + display.getOptions().width;
+      var ystart = camera_map_y - Math.trunc(display.getOptions().height / 2);
+      var yend = ystart + display.getOptions().height;
+
+      for (var xi = xstart; xi < xend; xi++) {
+        for (var yi = xstart; yi < yend; yi++) {
+          this.getTile(xi, yi).render(display, cx, cy);
           cy++;
         }
         cx++;
         cy = 0;
       }
+    }
+  }, {
+    key: 'getTile',
+    value: function getTile(mapx, mapy) {
+      if (mapx < 0 || mapx > this.xdim - 1 || mapy < 0 || mapy > this.ydim - 1) {
+        return _tile.TILES.NULLTILE;
+      }
+      return this.tileGrid[mapx][mapy];
     }
   }]);
 

@@ -8,21 +8,33 @@ export class Map {
     this.xdim = xdim || 1;
     this.ydim = ydim || 1;
     //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
-    this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.xdim, this.ydim);
+    this.tileGrid = TILE_GRID_GENERATOR['basic types'](xdim, ydim);
   }
 
-  render(display, camera_x, camera_y) {
+  render(display, camera_map_x, camera_map_y) {
     console.log("RENDER");
     let cx = 0;
     let cy = 0;
-    for (let xi = 0; xi < this.xdim; xi++) {
-      for (let yi = 0; yi < this.ydim; yi++) {
-        this.tileGrid[xi][yi].render(display,cx,cy);
+    let xstart = camera_map_x - Math.trunc(display.getOptions().width / 2);
+    let xend = xstart + display.getOptions().width;
+    let ystart = camera_map_y - Math.trunc(display.getOptions().height / 2);
+    let yend = ystart + display.getOptions().height;
+
+    for (let xi = xstart; xi < xend; xi++) {
+      for (let yi = xstart; yi < yend; yi++) {
+        this.getTile(xi,yi).render(display,cx,cy);
         cy++;
       }
       cx++;
       cy = 0;
     }
+  }
+
+  getTile(mapx, mapy) {
+    if ((mapx < 0) || (mapx > this.xdim - 1) || (mapy < 0) || (mapy > this.ydim - 1)) {
+      return TILES.NULLTILE;
+    }
+    return this.tileGrid[mapx][mapy];
   }
 }
 

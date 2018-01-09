@@ -1,4 +1,5 @@
 import {Message} from './message.js';
+import {DisplaySymbol} from './displaySymbol.js';
 import {Map} from './Map.js';
 
 class UIMode {
@@ -12,6 +13,7 @@ class UIMode {
   }
 
   exit() {
+    Message.clear();
     console.log("exiting "+this.constructor.name);
   }
 
@@ -52,10 +54,14 @@ export class StartUpMode extends UIMode {
 }
 export class PlayMode extends UIMode {
   enter() {
+    Message.send("entering PLAY");
     if (!this.map) {
         console.log("MAP");
-      this.map = new Map(40, 24);
+      this.map = new Map(200, 200);
     }
+    this.camerax = 5;
+    this.cameray = 10;
+    this.cameraSymbol = new DisplaySymbol('#', '#es4');
   }
 
   render(display) {
@@ -63,7 +69,8 @@ export class PlayMode extends UIMode {
     display.drawText(1,1,"game play");
     display.drawText(1,2,"press Enter to win");
     display.drawText(1,3,"press Escape to lose");
-    this.map.render(display,0,0);
+    this.map.render(display,this.camerax,this.cameray);
+    this.cameraSymbol.render(display, display.getOptions().width, display.getOptions().height);
   }
 
 
@@ -73,8 +80,21 @@ export class PlayMode extends UIMode {
         console.dir(this);
         this.game.switchMode('win');
       }
+      else if (evt.key == '7') {
+        this.moveCamera(-1, -1);
+        return true;
+      }
+      else if (evt.key == '3') {
+        this.moveCamera(1,1);
+        return true;
+      }
     }
     return true;
+  }
+
+  moveCamera(dx,dy) {
+    this.camerax += dx;
+    this.cameray += dy;
   }
 
 }
@@ -165,7 +185,7 @@ export class PersistenceMode extends UIMode {
       return false;
     }
     let restorationString = window.localStorage.getItem('bbsavegame');
-    Message.send("Game Saved. Restoration String is: " + restorationString);
+    Message.send("Game Loaded. Restoration String is: " + restorationString);
   }
 
   localStorageAvailable() {
@@ -176,7 +196,7 @@ export class PersistenceMode extends UIMode {
       return true;
     }
     catch(e) {
-      this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
+      Message.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
       return false;
     }
   }
