@@ -15244,7 +15244,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     value: function enter() {
       if (!this.map) {
         console.log("MAP");
-        this.map = new _Map.Map(20, 12);
+        this.map = new _Map.Map(40, 24);
       }
     }
   }, {
@@ -15431,9 +15431,15 @@ exports.Map = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _rotJs = __webpack_require__(125);
+
+var _rotJs2 = _interopRequireDefault(_rotJs);
+
 var _tile = __webpack_require__(335);
 
 var _util = __webpack_require__(126);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -15443,7 +15449,8 @@ var Map = exports.Map = function () {
 
     this.xdim = xdim || 1;
     this.ydim = ydim || 1;
-    this.tileGrid = (0, _util.init2DArray)(this.xdim, this.ydim, _tile.TILES.NULLTILE);
+    //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
+    this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.xdim, this.ydim);
   }
 
   _createClass(Map, [{
@@ -15465,6 +15472,25 @@ var Map = exports.Map = function () {
 
   return Map;
 }();
+
+var TILE_GRID_GENERATOR = {
+  'basic types': function basicTypes(xd, yd) {
+    var tg = (0, _util.init2DArray)(xd, yd, _tile.TILES.NULLTILE);
+    var gen = new _rotJs2.default.Map.Cellular(xd, yd, { connected: true });
+    gen.randomize(.49);
+    gen.create();
+    gen.create();
+    gen.create();
+    gen.create();
+    gen.create();
+    gen.create();
+    gen.connect(function (x, y, isWall) {
+      tg[x][y] = isWall || x == 0 || y == 0 || x == xd - 1 || y == yd - 1 ? _tile.TILES.WALL : _tile.TILES.FLOOR;
+    });
+    console.log(tg);
+    return tg;
+  }
+};
 
 /***/ }),
 /* 335 */
@@ -15557,7 +15583,7 @@ Object.defineProperty(exports, "__esModule", {
 /* Colors class; allows the implementation of default colors in other classes */
 
 var Color = exports.Color = {
-  FG: '#000aff',
+  FG: '#fff',
   BG: '#000'
 };
 

@@ -54,7 +54,7 @@ export class PlayMode extends UIMode {
   enter() {
     if (!this.map) {
         console.log("MAP");
-      this.map = new Map(20, 12);
+      this.map = new Map(40, 24);
     }
   }
 
