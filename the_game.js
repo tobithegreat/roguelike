@@ -15252,7 +15252,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       }
       this.camerax = 5;
       this.cameray = 10;
-      this.cameraSymbol = new _displaySymbol.DisplaySymbol('#', '#es4');
+      this.cameraSymbol = new _displaySymbol.DisplaySymbol('@', '#eb4');
     }
   }, {
     key: 'render',
@@ -15262,7 +15262,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.drawText(1, 2, "press Enter to win");
       display.drawText(1, 3, "press Escape to lose");
       this.map.render(display, this.camerax, this.cameray);
-      this.cameraSymbol.render(display, display.getOptions().width, display.getOptions().height);
+      this.cameraSymbol.render(display, display.getOptions().width / 2, display.getOptions().height / 2);
     }
   }, {
     key: 'handleInput',

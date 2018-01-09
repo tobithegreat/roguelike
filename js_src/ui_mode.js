@@ -61,7 +61,7 @@ export class PlayMode extends UIMode {
     }
     this.camerax = 5;
     this.cameray = 10;
-    this.cameraSymbol = new DisplaySymbol('#', '#es4');
+    this.cameraSymbol = new DisplaySymbol('@', '#eb4');
   }
 
   render(display) {
@@ -70,7 +70,7 @@ export class PlayMode extends UIMode {
     display.drawText(1,2,"press Enter to win");
     display.drawText(1,3,"press Escape to lose");
     this.map.render(display,this.camerax,this.cameray);
-    this.cameraSymbol.render(display, display.getOptions().width, display.getOptions().height);
+    this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
   }
 
 
