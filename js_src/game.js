@@ -112,6 +112,7 @@ export let Game = {
       height: this.display.avatar.h,
       spacing: this.display.SPACING
     });
+    
   },
 
 

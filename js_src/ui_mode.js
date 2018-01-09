@@ -1,4 +1,5 @@
 import {Message} from './message.js';
+import {Map} from './Map.js';
 
 class UIMode {
   constructor(thegame) {
@@ -51,8 +52,10 @@ export class StartUpMode extends UIMode {
 }
 export class PlayMode extends UIMode {
   enter() {
-    super.enter();
-    console.log("game playing");
+    if (!this.map) {
+        console.log("MAP");
+      this.map = new Map(20, 12);
+    }
   }
 
   render(display) {
@@ -60,6 +63,7 @@ export class PlayMode extends UIMode {
     display.drawText(1,1,"game play");
     display.drawText(1,2,"press Enter to win");
     display.drawText(1,3,"press Escape to lose");
+    this.map.render(display,0,0);
   }
 
 
@@ -124,7 +128,8 @@ export class PersistenceMode extends UIMode {
     if (eventType == 'keyup') {
 
       if (evt.key == "N".toLowerCase()) {
-        this.game.setupNewGame();
+        //this.game.setupNewGame();
+        this.game.switchMode('play');
         console.dir("New Game");
         return true;
       }

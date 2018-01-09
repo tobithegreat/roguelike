@@ -7,8 +7,8 @@ class Tile extends DisplaySymbol {
   }
 }
 
-let TILES = {
+export let TILES = {
   NULLTILE: new Tile('nulltile','$'),
-  WALL: new Tile('wall', '#');
-  FLOOR: new Tile('floor', '.');
+  WALL: new Tile('wall', '#'),
+  FLOOR: new Tile('floor', '.'),
 }
