@@ -14,6 +14,14 @@ export class Map {
     console.dir(this);
   }
 
+  getId() {
+    return this.id;
+  }
+
+  setID(newID) {
+    this.id = newID;
+  }
+
   render(display, camera_map_x, camera_map_y) {
     console.log("RENDER");
     let cx = 0;

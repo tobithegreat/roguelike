@@ -15541,6 +15541,16 @@ var Map = exports.Map = function () {
   }
 
   _createClass(Map, [{
+    key: 'getId',
+    value: function getId() {
+      return this.id;
+    }
+  }, {
+    key: 'setID',
+    value: function setID(newID) {
+      this.id = newID;
+    }
+  }, {
     key: 'render',
     value: function render(display, camera_map_x, camera_map_y) {
       console.log("RENDER");
