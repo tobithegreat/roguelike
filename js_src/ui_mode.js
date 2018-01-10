@@ -57,7 +57,7 @@ export class PlayMode extends UIMode {
   constructor(thegame) {
     super(thegame);
     this.state = {
-      mapId: '',
+      mapID: '',
       camera_map_x: '',
       camera_map_y: '',
     };
@@ -66,7 +66,12 @@ export class PlayMode extends UIMode {
   enter() {
     Message.send("entering PLAY");
     if (!this.state.mapID) {
-      let m = MapMaker(10,10);
+      let m = MapMaker({
+        xdim:10,
+        ydim:10,
+        mapType: 'basic types'
+      }
+      );
       this.state.mapID = m.getID();
       m.build();
 

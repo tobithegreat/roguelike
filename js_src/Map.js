@@ -12,18 +12,18 @@ export class Map {
     this.state.mapType = mapType || 'basic types';
     //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
     this.state.setupRngState = ROT.RNG.getState();
-    this.tileGrid = TILE_GRID_GENERATOR[mapType](xdim, ydim, this.state.setupRngState);
+    this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
     this.state.id = uniqueID('map');
 
     console.dir(this);
   }
 
   build() {
-      this.tileGrid = TILE_GRID_GENERATOR['basic types'](xdim, ydim, this.state.setupRngState);
+      this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
   }
 
   getID() {
-    return this.id;
+    return this.state.id;
   }
 
   getXDim() {
@@ -43,7 +43,7 @@ export class Map {
   }
 
   setID(newID) {
-    this.id = newID;
+    this.state.id = newID;
   }
 
   setXDim(newx) {
@@ -72,7 +72,7 @@ export class Map {
     let yend = ystart + display.getOptions().height;
 
     for (let xi = xstart; xi < xend; xi++) {
-      for (let yi = xstart; yi < yend; yi++) {
+      for (let yi = ystart; yi < yend; yi++) {
         this.getTile(xi,yi).render(display,cx,cy);
         cy++;
       }

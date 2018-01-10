@@ -15305,7 +15305,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     var _this2 = _possibleConstructorReturn(this, (PlayMode.__proto__ || Object.getPrototypeOf(PlayMode)).call(this, thegame));
 
     _this2.state = {
-      mapId: '',
+      mapID: '',
       camera_map_x: '',
       camera_map_y: ''
     };
@@ -15317,7 +15317,11 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     value: function enter() {
       _message.Message.send("entering PLAY");
       if (!this.state.mapID) {
-        var m = (0, _Map.MapMaker)(10, 10);
+        var m = (0, _Map.MapMaker)({
+          xdim: 10,
+          ydim: 10,
+          mapType: 'basic types'
+        });
         this.state.mapID = m.getID();
         m.build();
       }
@@ -15593,7 +15597,7 @@ var Map = exports.Map = function () {
     this.state.mapType = mapType || 'basic types';
     //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
     this.state.setupRngState = _rotJs2.default.RNG.getState();
-    this.tileGrid = TILE_GRID_GENERATOR[mapType](xdim, ydim, this.state.setupRngState);
+    this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
     this.state.id = (0, _util.uniqueID)('map');
 
     console.dir(this);
@@ -15602,12 +15606,12 @@ var Map = exports.Map = function () {
   _createClass(Map, [{
     key: 'build',
     value: function build() {
-      this.tileGrid = TILE_GRID_GENERATOR['basic types'](xdim, ydim, this.state.setupRngState);
+      this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
     }
   }, {
     key: 'getID',
     value: function getID() {
-      return this.id;
+      return this.state.id;
     }
   }, {
     key: 'getXDim',
@@ -15632,7 +15636,7 @@ var Map = exports.Map = function () {
   }, {
     key: 'setID',
     value: function setID(newID) {
-      this.id = newID;
+      this.state.id = newID;
     }
   }, {
     key: 'setXDim',
@@ -15666,7 +15670,7 @@ var Map = exports.Map = function () {
       var yend = ystart + display.getOptions().height;
 
       for (var xi = xstart; xi < xend; xi++) {
-        for (var yi = xstart; yi < yend; yi++) {
+        for (var yi = ystart; yi < yend; yi++) {
           this.getTile(xi, yi).render(display, cx, cy);
           cy++;
         }
