@@ -2,6 +2,7 @@ import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartUpMode, PersistenceMode, PlayMode, WinMode, LoseMode} from './ui_mode.js';
 import {Message} from './message.js';
+import {DATASTORE} from './datastore.js';
 
 export let Game = {
   modes: {
@@ -35,8 +36,10 @@ export let Game = {
   init: function() {
     this.setupNewGame();
     this.setupModes();
+    DATASTORE.GAME = this;
     Message.send("This is a message");
     this.switchMode('start');
+
   },
 
   getDisplay: function (displayId) {
@@ -112,6 +115,7 @@ export let Game = {
       height: this.display.avatar.h,
       spacing: this.display.SPACING
     });
+
   },
 
 
@@ -142,7 +146,10 @@ export let Game = {
 
   toJSON: function() {
     let json = '';
-    json = JSON.stringify({rseed: this._randomSeed});
+    json = JSON.stringify({
+      rseed: this._randomSeed,
+      playModeState: this.modes.play
+    });
     return json;
   },
 
@@ -150,6 +157,9 @@ export let Game = {
     console.log('game from json processing: ' +json);
     let state = JSON.parse(json);
     this._randomSeed = state.rseed;
+    ROT.RNG.setSeed(this._randomSeed);
+
+    this.modes.play.restoreFromState(state.playModeState);
   }
 };
 
