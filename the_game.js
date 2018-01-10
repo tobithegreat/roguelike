@@ -9350,6 +9350,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.utilAlert = utilAlert;
 exports.init2DArray = init2DArray;
 exports.uniqueID = uniqueID;
+
+var _datastore = __webpack_require__(338);
+
 function utilAlert() {
   document.write("this is a util function<br/>");
 }
@@ -9368,11 +9371,13 @@ function init2DArray(xdim, ydim) {
 }
 
 var randCharSource = '1234567890abcdefghijklmnopqrstuvwxyz'.split('');
-function uniqueID() {
+function uniqueID(tag) {
   var id = '';
   for (var i = 0; i < 6; i++) {
     id += randCharSource.random();
   }
+  id = _datastore.DATASTORE.ID_SEQ + ' - ' + (tag ? tag + '' : '') + ' - ' + id;
+  _datastore.DATASTORE.ID_SEQ++;
   return id;
 }
 
@@ -15018,6 +15023,8 @@ var _ui_mode = __webpack_require__(334);
 
 var _message = __webpack_require__(127);
 
+var _datastore = __webpack_require__(338);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -15054,6 +15061,7 @@ var Game = exports.Game = {
   init: function init() {
     this.setupNewGame();
     this.setupModes();
+    _datastore.DATASTORE.GAME = this;
     _message.Message.send("This is a message");
     this.switchMode('start');
   },
@@ -15162,7 +15170,10 @@ var Game = exports.Game = {
 
   toJSON: function toJSON() {
     var json = '';
-    json = JSON.stringify({ rseed: this._randomSeed });
+    json = JSON.stringify({
+      rseed: this._randomSeed,
+      playModeState: this.modes.play
+    });
     return json;
   },
 
@@ -15170,6 +15181,9 @@ var Game = exports.Game = {
     console.log('game from json processing: ' + json);
     var state = JSON.parse(json);
     this._randomSeed = state.rseed;
+    _rotJs2.default.RNG.setSeed(this._randomSeed);
+
+    this.modes.play.restoreFromState(state);
   }
 };
 
@@ -15198,6 +15212,8 @@ var _message = __webpack_require__(127);
 var _displaySymbol = __webpack_require__(128);
 
 var _Map = __webpack_require__(336);
+
+var _datastore = __webpack_require__(338);
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
@@ -15283,23 +15299,43 @@ var StartUpMode = exports.StartUpMode = function (_UIMode) {
 var PlayMode = exports.PlayMode = function (_UIMode2) {
   _inherits(PlayMode, _UIMode2);
 
-  function PlayMode() {
+  function PlayMode(thegame) {
     _classCallCheck(this, PlayMode);
 
-    return _possibleConstructorReturn(this, (PlayMode.__proto__ || Object.getPrototypeOf(PlayMode)).apply(this, arguments));
+    var _this2 = _possibleConstructorReturn(this, (PlayMode.__proto__ || Object.getPrototypeOf(PlayMode)).call(this, thegame));
+
+    _this2.state = {
+      mapId: '',
+      camera_map_x: '',
+      camera_map_y: ''
+    };
+    return _this2;
   }
 
   _createClass(PlayMode, [{
     key: 'enter',
     value: function enter() {
       _message.Message.send("entering PLAY");
-      if (!this.map) {
-        console.log("MAP");
-        this.map = new _Map.Map(200, 200);
+      if (!this.state.mapID) {
+        var m = (0, _Map.MapMaker)(10, 10);
+        this.state.mapID = m.getID();
+        m.build();
       }
-      this.camerax = 5;
-      this.cameray = 10;
+      this.state.camerax = 0;
+      this.state.cameray = 0;
       this.cameraSymbol = new _displaySymbol.DisplaySymbol('@', '#eb4');
+    }
+  }, {
+    key: 'toJSON',
+    value: function toJSON() {
+      return JSON.stringify(this.state);
+    }
+  }, {
+    key: 'restoreFromState',
+    value: function restoreFromState(stateData) {
+      console.log("restoring play state from: ");
+      console.dir(stateData);
+      this.state = stateData;
     }
   }, {
     key: 'render',
@@ -15308,7 +15344,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.drawText(1, 1, "game play");
       display.drawText(1, 2, "press Enter to win");
       display.drawText(1, 3, "press Escape to lose");
-      this.map.render(display, this.camerax, this.cameray);
+      _datastore.DATASTORE.MAPS[this.state.mapID].render(display, this.state.camerax, this.state.cameray);
       this.cameraSymbol.render(display, display.getOptions().width / 2, display.getOptions().height / 2);
     }
   }, {
@@ -15331,8 +15367,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'moveCamera',
     value: function moveCamera(dx, dy) {
-      this.camerax += dx;
-      this.cameray += dy;
+      this.state.camerax += dx;
+      this.state.cameray += dy;
     }
   }]);
 
@@ -15453,7 +15489,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       if (!this.localStorageAvailable()) {
         return false;
       }
-      window.localStorage.setItem('bbsavegame', this.game.toJSON());
+      window.localStorage.setItem('bbsavegame', JSON.stringify(_datastore.DATASTORE));
       _message.Message.send("Game Saved");
     }
   }, {
@@ -15465,6 +15501,22 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       }
       var restorationString = window.localStorage.getItem('bbsavegame');
       _message.Message.send("Game Loaded. Restoration String is: " + restorationString);
+
+      var state = JSON.parse(restorationString);
+      clearDataStore();
+      _datastore.DATASTORE.GAME = this.game;
+      _datastore.DATASTORE.ID_SEQ = state.ID_SEQ;
+      this.game.fromJSON(state.GAME);
+
+      for (var mapID in state.MAPS) {
+        var mapData = JSON.parse(state.MAPS[mapID]);
+
+        _datastore.DATASTORE.MAPS[mapID] = (0, _Map.MapMaker)(mapData);
+        _datastore.DATASTORE.MAPS[mapID].build();
+      }
+
+      console.log('post load');
+      console.dir(_datastore.DATASTORE);
     }
   }, {
     key: 'localStorageAvailable',
@@ -15515,6 +15567,8 @@ exports.Map = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+exports.MapMaker = MapMaker;
+
 var _rotJs = __webpack_require__(91);
 
 var _rotJs2 = _interopRequireDefault(_rotJs);
@@ -15523,32 +15577,82 @@ var _tile = __webpack_require__(337);
 
 var _util = __webpack_require__(126);
 
+var _datastore = __webpack_require__(338);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Map = exports.Map = function () {
-  function Map(xdim, ydim) {
+  function Map(xdim, ydim, mapType) {
     _classCallCheck(this, Map);
 
-    this.xdim = xdim || 1;
-    this.ydim = ydim || 1;
+    this.state = {};
+    this.state.xdim = xdim || 1;
+    this.state.ydim = ydim || 1;
+    this.state.mapType = mapType || 'basic types';
     //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
-    this.tileGrid = TILE_GRID_GENERATOR['basic types'](xdim, ydim);
-    this.id = (0, _util.uniqueID)();
+    this.state.setupRngState = _rotJs2.default.RNG.getState();
+    this.tileGrid = TILE_GRID_GENERATOR[mapType](xdim, ydim, this.state.setupRngState);
+    this.state.id = (0, _util.uniqueID)('map');
 
     console.dir(this);
   }
 
   _createClass(Map, [{
-    key: 'getId',
-    value: function getId() {
+    key: 'build',
+    value: function build() {
+      this.tileGrid = TILE_GRID_GENERATOR['basic types'](xdim, ydim, this.state.setupRngState);
+    }
+  }, {
+    key: 'getID',
+    value: function getID() {
       return this.id;
+    }
+  }, {
+    key: 'getXDim',
+    value: function getXDim() {
+      return this.state.xdim;
+    }
+  }, {
+    key: 'getYDim',
+    value: function getYDim() {
+      return this.state.ydim;
+    }
+  }, {
+    key: 'getMapType',
+    value: function getMapType() {
+      return this.state.mapType;
+    }
+  }, {
+    key: 'getRngState',
+    value: function getRngState() {
+      return this.state.setupRngState;
     }
   }, {
     key: 'setID',
     value: function setID(newID) {
       this.id = newID;
+    }
+  }, {
+    key: 'setXDim',
+    value: function setXDim(newx) {
+      this.state.xdim = newx;
+    }
+  }, {
+    key: 'setYDim',
+    value: function setYDim(newy) {
+      this.state.ydim = newy;
+    }
+  }, {
+    key: 'setMapType',
+    value: function setMapType(newMap) {
+      this.state.mapType = newMap;
+    }
+  }, {
+    key: 'setRngState',
+    value: function setRngState(newRNG) {
+      this.state.setupRngState = newRNG;
     }
   }, {
     key: 'render',
@@ -15571,9 +15675,14 @@ var Map = exports.Map = function () {
       }
     }
   }, {
+    key: 'toJSON',
+    value: function toJSON() {
+      return JSON.stringify(this.state);
+    }
+  }, {
     key: 'getTile',
     value: function getTile(mapx, mapy) {
-      if (mapx < 0 || mapx > this.xdim - 1 || mapy < 0 || mapy > this.ydim - 1) {
+      if (mapx < 0 || mapx > this.state.xdim - 1 || mapy < 0 || mapy > this.state.ydim - 1) {
         return _tile.TILES.NULLTILE;
       }
       return this.tileGrid[mapx][mapy];
@@ -15584,23 +15693,38 @@ var Map = exports.Map = function () {
 }();
 
 var TILE_GRID_GENERATOR = {
-  'basic types': function basicTypes(xd, yd) {
+  'basic types': function basicTypes(xd, yd, rngState) {
     var tg = (0, _util.init2DArray)(xd, yd, _tile.TILES.NULLTILE);
     var gen = new _rotJs2.default.Map.Cellular(xd, yd, { connected: true });
+    var origRngState = _rotJs2.default.RNG.getState();
+    _rotJs2.default.RNG.setState(rngState);
     gen.randomize(.49);
     gen.create();
-    gen.create();
-    gen.create();
-    gen.create();
-    gen.create();
-    gen.create();
+
     gen.connect(function (x, y, isWall) {
       tg[x][y] = isWall || x == 0 || y == 0 || x == xd - 1 || y == yd - 1 ? _tile.TILES.WALL : _tile.TILES.FLOOR;
     });
+
+    _rotJs2.default.RNG.setState(origRngState);
     console.log(tg);
     return tg;
   }
 };
+
+function MapMaker(mapData) {
+  var m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
+  if (mapData.id) {
+    m.setID(mapData.ID);
+  }
+
+  _datastore.DATASTORE.MAPS[m.getID()] = m;
+
+  if (mapData.setupRngState) {
+    m.setRngState(mapData.setupRngState);
+  }
+
+  return m;
+}
 
 /***/ }),
 /* 337 */
@@ -15642,6 +15766,31 @@ var TILES = exports.TILES = {
   WALL: new Tile('wall', '#'),
   FLOOR: new Tile('floor', '.')
 };
+
+/***/ }),
+/* 338 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.clearDataStore = clearDataStore;
+var DATASTORE = exports.DATASTORE = {
+  GAME: '',
+  ID_SEQ: 1,
+  MAPS: {}
+};
+
+function clearDataStore() {
+  exports.DATASTORE = DATASTORE = {
+    GAME: '',
+    ID_SEQ: 1,
+    MAPS: {}
+  };
+}
 
 /***/ })
 /******/ ]);

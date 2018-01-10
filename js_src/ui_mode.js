@@ -1,6 +1,7 @@
 import {Message} from './message.js';
 import {DisplaySymbol} from './displaySymbol.js';
-import {Map} from './Map.js';
+import {MapMaker} from './Map.js';
+import {DATASTORE} from './datastore.js';
 
 class UIMode {
   constructor(thegame) {
@@ -53,23 +54,46 @@ export class StartUpMode extends UIMode {
 
 }
 export class PlayMode extends UIMode {
+  constructor(thegame) {
+    super(thegame);
+    this.state = {
+      mapId: '',
+      camera_map_x: '',
+      camera_map_y: '',
+    };
+  }
+
   enter() {
     Message.send("entering PLAY");
-    if (!this.map) {
-        console.log("MAP");
-      this.map = new Map(200, 200);
+    if (!this.state.mapID) {
+      let m = MapMaker(10,10);
+      this.state.mapID = m.getID();
+      m.build();
+
     }
-    this.camerax = 5;
-    this.cameray = 10;
+    this.state.camerax = 0;
+    this.state.cameray = 0;
     this.cameraSymbol = new DisplaySymbol('@', '#eb4');
   }
+
+  toJSON() {
+    return JSON.stringify(this.state);
+  }
+
+  restoreFromState(stateData) {
+    console.log("restoring play state from: ");
+    console.dir(stateData);
+    this.state = stateData;
+  }
+
+
 
   render(display) {
     display.clear();
     display.drawText(1,1,"game play");
     display.drawText(1,2,"press Enter to win");
     display.drawText(1,3,"press Escape to lose");
-    this.map.render(display,this.camerax,this.cameray);
+    DATASTORE.MAPS[this.state.mapID].render(display,this.state.camerax,this.state.cameray);
     this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
   }
 
@@ -93,8 +117,8 @@ export class PlayMode extends UIMode {
   }
 
   moveCamera(dx,dy) {
-    this.camerax += dx;
-    this.cameray += dy;
+    this.state.camerax += dx;
+    this.state.cameray += dy;
   }
 
 }
@@ -175,7 +199,7 @@ export class PersistenceMode extends UIMode {
     if (!this.localStorageAvailable()) {
       return false;
     }
-    window.localStorage.setItem('bbsavegame', this.game.toJSON());
+    window.localStorage.setItem('bbsavegame', JSON.stringify(DATASTORE));
     Message.send("Game Saved");
   }
 
@@ -186,6 +210,22 @@ export class PersistenceMode extends UIMode {
     }
     let restorationString = window.localStorage.getItem('bbsavegame');
     Message.send("Game Loaded. Restoration String is: " + restorationString);
+
+    let state = JSON.parse(restorationString);
+    clearDataStore();
+    DATASTORE.GAME = this.game;
+    DATASTORE.ID_SEQ = state.ID_SEQ;
+    this.game.fromJSON(state.GAME);
+
+    for (let mapID in state.MAPS) {
+      let mapData = JSON.parse(state.MAPS[mapID]);
+
+      DATASTORE.MAPS[mapID] = MapMaker(mapData);
+      DATASTORE.MAPS[mapID].build();
+    }
+
+    console.log('post load');
+    console.dir(DATASTORE);
   }
 
   localStorageAvailable() {
