@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import {TILES} from './tile.js';
-import {init2DArray} from './util.js';
+import {init2DArray, uniqueID} from './util.js';
 
 
 export class Map {
@@ -9,6 +9,9 @@ export class Map {
     this.ydim = ydim || 1;
     //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
     this.tileGrid = TILE_GRID_GENERATOR['basic types'](xdim, ydim);
+    this.id = uniqueID();
+
+    console.dir(this);
   }
 
   render(display, camera_map_x, camera_map_y) {
