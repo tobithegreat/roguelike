@@ -159,7 +159,7 @@ export let Game = {
     this._randomSeed = state.rseed;
     ROT.RNG.setSeed(this._randomSeed);
 
-    this.modes.play.restoreFromState(state);
+    this.modes.play.restoreFromState(state.playModeState);
   }
 };
 

@@ -15183,7 +15183,7 @@ var Game = exports.Game = {
     this._randomSeed = state.rseed;
     _rotJs2.default.RNG.setSeed(this._randomSeed);
 
-    this.modes.play.restoreFromState(state);
+    this.modes.play.restoreFromState(state.playModeState);
   }
 };
 
@@ -15318,15 +15318,15 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       _message.Message.send("entering PLAY");
       if (!this.state.mapID) {
         var m = (0, _Map.MapMaker)({
-          xdim: 10,
-          ydim: 10,
+          xdim: 100,
+          ydim: 100,
           mapType: 'basic types'
         });
         this.state.mapID = m.getID();
         m.build();
       }
-      this.state.camerax = 0;
-      this.state.cameray = 0;
+      this.state.camera_map_x = 5;
+      this.state.camera_map_y = 10;
       this.cameraSymbol = new _displaySymbol.DisplaySymbol('@', '#eb4');
     }
   }, {
@@ -15339,7 +15339,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     value: function restoreFromState(stateData) {
       console.log("restoring play state from: ");
       console.dir(stateData);
-      this.state = stateData;
+      this.state = JSON.parse(stateData);
     }
   }, {
     key: 'render',
@@ -15348,7 +15348,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.drawText(1, 1, "game play");
       display.drawText(1, 2, "press Enter to win");
       display.drawText(1, 3, "press Escape to lose");
-      _datastore.DATASTORE.MAPS[this.state.mapID].render(display, this.state.camerax, this.state.cameray);
+      _datastore.DATASTORE.MAPS[this.state.mapID].render(display, this.state.camera_map_x, this.state.camera_map_y);
       this.cameraSymbol.render(display, display.getOptions().width / 2, display.getOptions().height / 2);
     }
   }, {
@@ -15358,21 +15358,45 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         if (evt.key == "h") {
           console.dir(this);
           this.game.switchMode('win');
-        } else if (evt.key == '7') {
-          this.moveCamera(-1, -1);
-          return true;
-        } else if (evt.key == '3') {
-          this.moveCamera(1, 1);
+        } else if (evt.key == 'p') {
+          this.game.switchMode('persistence');
           return true;
         }
+
+        // MOVEMENT WITH NUMPAD KEYS
+        else if (evt.key == '4') {
+            this.moveCamera(-1, 0);
+            return true;
+          } else if (evt.key == '7') {
+            this.moveCamera(-1, -1);
+            return true;
+          } else if (evt.key == '8') {
+            this.moveCamera(0, -1);
+            return true;
+          } else if (evt.key == '9') {
+            this.moveCamera(1, -1);
+            return true;
+          } else if (evt.key == '6') {
+            this.moveCamera(1, 0);
+            return true;
+          } else if (evt.key == '3') {
+            this.moveCamera(1, 1);
+            return true;
+          } else if (evt.key == '2') {
+            this.moveCamera(0, 1);
+            return true;
+          } else if (evt.key == '1') {
+            this.moveCamera(-1, 1);
+            return true;
+          }
       }
       return true;
     }
   }, {
     key: 'moveCamera',
     value: function moveCamera(dx, dy) {
-      this.state.camerax += dx;
-      this.state.cameray += dy;
+      this.state.camera_map_x += dx;
+      this.state.camera_map_y += dy;
     }
   }]);
 
@@ -15507,7 +15531,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       _message.Message.send("Game Loaded. Restoration String is: " + restorationString);
 
       var state = JSON.parse(restorationString);
-      clearDataStore();
+      (0, _datastore.clearDataStore)();
       _datastore.DATASTORE.GAME = this.game;
       _datastore.DATASTORE.ID_SEQ = state.ID_SEQ;
       this.game.fromJSON(state.GAME);
@@ -15518,6 +15542,8 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         _datastore.DATASTORE.MAPS[mapID] = (0, _Map.MapMaker)(mapData);
         _datastore.DATASTORE.MAPS[mapID].build();
       }
+
+      this.game.switchMode('play');
 
       console.log('post load');
       console.dir(_datastore.DATASTORE);
