@@ -2,7 +2,7 @@ import {Message} from './message.js';
 import {DisplaySymbol} from './displaySymbol.js';
 import {MapMaker} from './Map.js';
 import {DATASTORE, clearDataStore} from './datastore.js';
-import {EntityFactory} from './factory.js';
+import {EntityFactory} from './entity-template.js';
 class UIMode {
   constructor(thegame) {
     console.log("created "+this.constructor.name);
@@ -25,6 +25,7 @@ class UIMode {
     }
     return true;
   }
+
 
   render(display) {
     display.drawText(2,2,"rendering "+this.constructor.name);
@@ -60,26 +61,33 @@ export class PlayMode extends UIMode {
       mapID: '',
       camera_map_x: '',
       camera_map_y: '',
+      avatarID: ''
     };
+  }
+
+  setupNewGame() {
+    let m = MapMaker({
+      xdim: 20,
+      ydim: 20,
+      mapType: 'basic types'
+    }
+    );
+    this.state.mapID = m.getID();
+    m.build();
+
+    this.state.camera_map_x = 0;
+    this.state.camera_map_y = 0;
+    this.cameraSymbol = new DisplaySymbol({'name':'avatar', 'chr':'@', 'fg':'#eb4'});
+    let a = EntityFactory.create('avatar');
+    this.state.avatarID = a.getID();
+    m.addEntityAtRandomPos(a);
+    this.moveCameraToAvatar();
   }
 
   enter() {
     Message.send("entering PLAY");
-    if (!this.state.mapID) {
-      let m = MapMaker({
-        xdim:100,
-        ydim:100,
-        mapType: 'basic types'
-      }
-      );
-      this.state.mapID = m.getID();
-      m.build();
+    this.setupNewGame();
 
-    }
-    this.state.camera_map_x = 5;
-    this.state.camera_map_y = 10;
-    this.cameraSymbol = new DisplaySymbol({'name':'avatar', 'chr':'@', 'fg':'#eb4'});
-    let a = EntityFactory.create(avatar);
     //this.cameraSymbol = new DisplaySymbol({chr:'@', fg:'#eb4'});
   }
 
@@ -155,9 +163,21 @@ export class PlayMode extends UIMode {
   }
 
   moveCamera(dx,dy) {
-    this.state.camera_map_x += dx;
-    this.state.camera_map_y += dy;
+    //this.state.camera_map_x += dx;
+    //this.state.camera_map_y += dy;
+    this.getAvatar().moveBy(dx,dy);
+    this.moveCameraToAvatar();
   }
+
+  moveCameraToAvatar() {
+    this.state.camera_map_x = this.getAvatar().getX();
+    this.state.camera_map_y = this.getAvatar().getY();
+  }
+
+  getAvatar() {
+    return DATASTORE.ENTITIES[this.state.avatarID];
+  }
+
 
 }
 export class WinMode extends UIMode {

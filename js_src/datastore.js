@@ -1,7 +1,8 @@
 export let DATASTORE = {
   GAME: '',
   ID_SEQ: 1,
-  MAPS: {}
+  MAPS: {},
+  ENTITIES: {}
 }
 
 export function clearDataStore() {

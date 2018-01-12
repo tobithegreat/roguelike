@@ -42,6 +42,10 @@ export let Game = {
 
   },
 
+  devDumpDataStore() {
+    console.dir(DATASTORE);
+  },
+  
   getDisplay: function (displayId) {
     if (this.display.hasOwnProperty(displayId)) {
       return this.display[displayId].o;

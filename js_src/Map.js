@@ -14,6 +14,8 @@ export class Map {
     this.state.setupRngState = ROT.RNG.getState();
     this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
     this.state.id = uniqueID('map');
+    this.state.entityIDToMapPos = {};
+    this.state.mapPostoEntityID = {};
 
     console.dir(this);
   }
@@ -62,6 +64,46 @@ export class Map {
     this.state.setupRngState = newRNG;
   }
 
+  updateEntityPosition(ent, newMapX, newMapY) {
+    let oldPos = this.state.entityIDToMapPos[ent.getID()];
+    delete this.state.mapPostoEntityID[oldPos];
+    this.state.entityIDToMapPos[`${newMapX},${newMapY}`] = ent.getID();
+
+    this.state.entityIDToMapPos[ent.getID()] = `${newMapX},${newMapY}`;
+  }
+
+  addEntityAt(ent, mapX, mapY) {
+    let pos = `${mapX},${mapY}`;
+    this.state.entityIDToMapPos[ent.getID()] = pos;
+    this.state.mapPostoEntityID[pos] = ent.getID();
+    ent.setMapID(this.getID());
+    ent.setX(mapX);
+    ent.setY(mapY);
+  }
+
+  addEntityAtRandomPos(ent) {
+    let openPos = this.getRandomOpenPosition();
+    let p = openPos.split(',');
+    this.addEntityAt(ent, p[0], p[1]);
+  }
+
+  getRandomOpenPosition() {
+    let x = Math.trunc(ROT.RNG.getUniform() * this.state.xdim);
+    let y = Math.trunc(ROT.RNG.getUniform() * this.state.ydim);
+
+    if (this.isPositionOpen(x,y)) {
+      return `${x},${y}`;
+    }
+    return this.getRandomOpenPosition();
+  }
+
+  isPositionOpen(mapx, mapy) {
+    if (this.tileGrid[mapx][mapy].isA('floor')) {
+      return true;
+    }
+    return false;
+  }
+
   render(display, camera_map_x, camera_map_y) {
     console.log("RENDER");
     let cx = 0;
@@ -73,7 +115,13 @@ export class Map {
 
     for (let xi = xstart; xi < xend; xi++) {
       for (let yi = ystart; yi < yend; yi++) {
-        this.getTile(xi,yi).render(display,cx,cy);
+        let pos = `${xi},${yi}`;
+        if (this.state.mapPostoEntityID[pos]) {
+          DATASTORE.ENTITIES[this.state.mapPostoEntityID[pos]].render(display,cx,cy);
+        } else {
+          this.getTile(xi,yi).render(display,cx,cy);
+        }
+
         cy++;
       }
       cx++;

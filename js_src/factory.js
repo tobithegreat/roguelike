@@ -16,7 +16,7 @@ export class Factory {
   create(templateName) {
     let product = new this.productClass(this.knownTemplates[templateName]);
 
-  //  DATASTORE.{{key}}[product.getID()] = product;
+    DATASTORE[this.datastoreNamespace][product.getID()] = product;
 
     return product;
   }
