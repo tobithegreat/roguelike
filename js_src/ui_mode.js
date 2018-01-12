@@ -2,8 +2,7 @@ import {Message} from './message.js';
 import {DisplaySymbol} from './displaySymbol.js';
 import {MapMaker} from './Map.js';
 import {DATASTORE, clearDataStore} from './datastore.js';
-import {ENTITIES} from './entity-template.js';
-import {Entity} from './entity.js';
+import {EntityFactory} from './factory.js';
 class UIMode {
   constructor(thegame) {
     console.log("created "+this.constructor.name);
@@ -80,7 +79,7 @@ export class PlayMode extends UIMode {
     this.state.camera_map_x = 5;
     this.state.camera_map_y = 10;
     this.cameraSymbol = new DisplaySymbol({'name':'avatar', 'chr':'@', 'fg':'#eb4'});
-    let a = new Entity(ENTITIES.avatar);
+    let a = EntityFactory.create(avatar);
     //this.cameraSymbol = new DisplaySymbol({chr:'@', fg:'#eb4'});
   }
 
