@@ -28,7 +28,12 @@ class UIMode {
 
 
   render(display) {
+    display.clear();
     display.drawText(2,2,"rendering "+this.constructor.name);
+  }
+
+  renderAvatar(display) {
+    display.clear();
   }
 
 }
@@ -165,8 +170,12 @@ export class PlayMode extends UIMode {
   moveCamera(dx,dy) {
     //this.state.camera_map_x += dx;
     //this.state.camera_map_y += dy;
-    this.getAvatar().moveBy(dx,dy);
-    this.moveCameraToAvatar();
+    if (this.getAvatar().tryWalk(dx,dy)) {
+      this.moveCameraToAvatar();
+      this.getAvatar().addTime(1);
+      return true;
+    }
+    return false;
   }
 
   moveCameraToAvatar() {
@@ -176,6 +185,13 @@ export class PlayMode extends UIMode {
 
   getAvatar() {
     return DATASTORE.ENTITIES[this.state.avatarID];
+  }
+
+  renderAvatar(display) {
+    display.clear();
+    display.drawText(0,0,"Avatar");
+    display.drawText(0,2,"time:" + this.getAvatar().getTime());
+    //display.drawText(0,4,"loc:" + this.getAvatar().getPos());
   }
 
 

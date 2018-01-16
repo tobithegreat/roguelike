@@ -45,7 +45,7 @@ export let Game = {
   devDumpDataStore() {
     console.dir(DATASTORE);
   },
-  
+
   getDisplay: function (displayId) {
     if (this.display.hasOwnProperty(displayId)) {
       return this.display[displayId].o;
@@ -126,6 +126,15 @@ export let Game = {
   renderMain: function() {
     console.log("renderMessage");
     this.curMode.render(this.display.main.o);
+    // let d = this.display.main.o;
+    // for (let i = 0; i < 10; i++) {
+    //   d.drawText(5,i+5,"hello world");
+    // }
+  },
+
+  renderAvatar: function() {
+    console.log("renderMessage");
+    this.curMode.renderAvatar(this.display.avatar.o);
     // let d = this.display.main.o;
     // for (let i = 0; i < 10; i++) {
     //   d.drawText(5,i+5,"hello world");

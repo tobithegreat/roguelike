@@ -39,3 +39,31 @@ export let TimeTracker = {
     }
   }
 };
+
+export let WalkerCorporeal = {
+  META: {
+    mixinName: 'WalkerCorporeal',
+    mixinGroupName: 'Walker',
+    stateNamespace: '_WalkerCorporeal',
+    stateModel: {
+    },
+    initialize: function() {
+
+    }
+  },
+  METHODS:{
+    tryWalk: function() {
+      let newX = this.state.x*1 + dx*1;
+      let newY = this.state.y*1 + dy*1;
+
+      if (this.getMap().isPositionOpen(newX, newY)) {
+        this.state.x += newX;
+        this.state.y += newY;
+        this.getMap().updateEntityPosition(this, this.state.x, this.state.y);
+        return true;
+      }
+        return false;
+    },
+
+  }
+};

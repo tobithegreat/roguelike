@@ -15037,6 +15037,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Game = undefined;
 
+var _Game;
+
 var _rotJs = __webpack_require__(92);
 
 var _rotJs2 = _interopRequireDefault(_rotJs);
@@ -15055,7 +15057,9 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Game = exports.Game = {
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var Game = exports.Game = (_Game = {
   modes: {
     start: '',
     persistence: '',
@@ -15179,44 +15183,44 @@ var Game = exports.Game = {
     // for (let i = 0; i < 10; i++) {
     //   d.drawText(5,i+5,"hello world");
     // }
-  },
-
-  bindEvent: function bindEvent(eventType) {
-    var _this = this;
-
-    window.addEventListener(eventType, function (evt) {
-      _this.eventHandler(eventType, evt);
-    });
-  },
-
-  eventHandler: function eventHandler(eventType, evt) {
-    // When an event is received have the current ui handle it
-    if (this.curMode !== null && this.curMode != '') {
-      if (this.curMode.handleInput(eventType, evt)) {
-        this.render();
-        //Message.ageMessages();
-      }
-    }
-  },
-
-  toJSON: function toJSON() {
-    var json = '';
-    json = JSON.stringify({
-      rseed: this._randomSeed,
-      playModeState: this.modes.play
-    });
-    return json;
-  },
-
-  fromJSON: function fromJSON(json) {
-    console.log('game from json processing: ' + json);
-    var state = JSON.parse(json);
-    this._randomSeed = state.rseed;
-    _rotJs2.default.RNG.setSeed(this._randomSeed);
-
-    this.modes.play.restoreFromState(state.playModeState);
   }
-};
+
+}, _defineProperty(_Game, 'renderAvatar', function renderAvatar() {
+  console.log("renderMessage");
+  this.curMode.renderAvatar(this.display.avatar.o);
+  // let d = this.display.main.o;
+  // for (let i = 0; i < 10; i++) {
+  //   d.drawText(5,i+5,"hello world");
+  // }
+}), _defineProperty(_Game, 'bindEvent', function bindEvent(eventType) {
+  var _this = this;
+
+  window.addEventListener(eventType, function (evt) {
+    _this.eventHandler(eventType, evt);
+  });
+}), _defineProperty(_Game, 'eventHandler', function eventHandler(eventType, evt) {
+  // When an event is received have the current ui handle it
+  if (this.curMode !== null && this.curMode != '') {
+    if (this.curMode.handleInput(eventType, evt)) {
+      this.render();
+      //Message.ageMessages();
+    }
+  }
+}), _defineProperty(_Game, 'toJSON', function toJSON() {
+  var json = '';
+  json = JSON.stringify({
+    rseed: this._randomSeed,
+    playModeState: this.modes.play
+  });
+  return json;
+}), _defineProperty(_Game, 'fromJSON', function fromJSON(json) {
+  console.log('game from json processing: ' + json);
+  var state = JSON.parse(json);
+  this._randomSeed = state.rseed;
+  _rotJs2.default.RNG.setSeed(this._randomSeed);
+
+  this.modes.play.restoreFromState(state.playModeState);
+}), _Game);
 
 //init
 //
@@ -15286,7 +15290,13 @@ var UIMode = function () {
   }, {
     key: 'render',
     value: function render(display) {
+      display.clear();
       display.drawText(2, 2, "rendering " + this.constructor.name);
+    }
+  }, {
+    key: 'renderAvatar',
+    value: function renderAvatar(display) {
+      display.clear();
     }
   }]);
 
@@ -15442,6 +15452,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       //this.state.camera_map_x += dx;
       //this.state.camera_map_y += dy;
       this.getAvatar().moveBy(dx, dy);
+      this.getAvatar().addTime(1);
       this.moveCameraToAvatar();
     }
   }, {
@@ -15454,6 +15465,14 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'getAvatar',
     value: function getAvatar() {
       return _datastore.DATASTORE.ENTITIES[this.state.avatarID];
+    }
+  }, {
+    key: 'renderAvatar',
+    value: function renderAvatar(display) {
+      display.clear();
+      display.drawText(0, 0, "Avatar");
+      display.drawText(0, 2, "time:" + this.getAvatar().getTime());
+      //display.drawText(0,4,"loc:" + this.getAvatar().getPos());
     }
   }]);
 
