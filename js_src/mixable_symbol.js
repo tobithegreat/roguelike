@@ -9,6 +9,8 @@ export class MixableSymbol extends DisplaySymbol {
     this.mixins = [];
     this.mixinTracker = {};
 
+    // record/track any mixins this entity has
+
     if (template.mixinNames) {
       for (let mi = 0; mi<template.mixinNames.length; mi++) {
         this.mixins.push(E[template.mixinNames[mi]]);
@@ -16,12 +18,13 @@ export class MixableSymbol extends DisplaySymbol {
       }
     }
 
+    // set up mixin state
     for (let i=0; mi< this.mixins.length; mi++) {
       let m = this.mixins[mi];
       if (m.META.stateNamespace) {
         this.state[m.META.stateNamespace] = {};
-        
-        if m.stateModel {
+      }
+        if (m.META.stateModel) {
           for (let sbase in m.META.stateModel) {
             this.state[m.META.stateNamespace][sbase] = m.META.stateModel[sbase];
           }
@@ -33,7 +36,31 @@ export class MixableSymbol extends DisplaySymbol {
           this[method] = m.METHODS[method];
         }
       }
+
+      // initialize mixins after all attributes, functions, listeners, etc. are in place
+      for (mi = 0; mi < this.mixins.length; mi++) {
+        let mixin = this.mixins[mi];
+        if (mixin.META.hasOwnProperty('initialize')) {
+          mixin.META.init.call(this,template);
+        }
+      }
     }
 
+    raiseMixinEvent(evtLabel, evtData) {
+      for (let mi = 0; mi<this.mixins.length; mi++) {
+        let m = this.mixins[mi];
+        if (m.LISTENERS && m.LISTENERS[evtLabel]) {
+          m.LISTENERS[evtLabel].call(this, evtData);
+        }
+      }
+    }
+
+    hasMixin(checkThis) {
+      if (typeof checkThis == 'object') {
+        return this.mixinTracker.hasOwnProperty(checkThis.META.mixinName);
+      } else {
+        return this.mixinTracker.hasOwnProperty(checkThis);
+      }
+    }
   }
 }

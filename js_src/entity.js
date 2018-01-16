@@ -1,13 +1,13 @@
 // A base class that defines all entities in the game
-import {DisplaySymbol} from './displaySymbol.js';
+import {MixableSymbol} from './mixable_symbol.js';
 import {uniqueID} from './util.js';
 import {DATASTORE} from './datastore.js';
 
-export class Entity extends DisplaySymbol {
+export class Entity extends MixableSymbol {
   constructor(template) {
     super(template);
     this.name = template.name;
-    this.state = {};
+
     this.state.x = 0;
     this.state.y = 0;
     this.state.mapID = 0;

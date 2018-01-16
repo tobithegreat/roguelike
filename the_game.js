@@ -8482,32 +8482,41 @@ function uniqueID(tag) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.DisplaySymbol = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _color = __webpack_require__(336);
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var DisplaySymbol = exports.DisplaySymbol = function () {
-  function DisplaySymbol(template) {
-    _classCallCheck(this, DisplaySymbol);
+var GameMessage = function () {
+  function GameMessage() {
+    _classCallCheck(this, GameMessage);
 
-    this.chr = template.chr || ' ';
-    this.fg = template.fg || _color.Color.FG;
-    this.bg = template.bg || _color.Color.BG;
+    this.message = '';
   }
 
-  _createClass(DisplaySymbol, [{
+  _createClass(GameMessage, [{
     key: 'render',
-    value: function render(display, console_x, console_y) {
-      display.draw(console_x, console_y, this.chr, this.fg, this.bg);
+    value: function render(targetDisplay) {
+      targetDisplay.clear();
+      targetDisplay.drawText(1, 1, this.message);
+    }
+  }, {
+    key: 'send',
+    value: function send(msg) {
+      this.message = '';
+      this.message = msg;
+    }
+  }, {
+    key: 'clear',
+    value: function clear() {
+      this.message = '';
     }
   }]);
 
-  return DisplaySymbol;
+  return GameMessage;
 }();
+
+var Message = exports.Message = new GameMessage();
 
 /***/ }),
 /* 95 */
@@ -9454,41 +9463,32 @@ module.exports = Math.scale || function scale(x, inLow, inHigh, outLow, outHigh)
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.DisplaySymbol = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _color = __webpack_require__(336);
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var GameMessage = function () {
-  function GameMessage() {
-    _classCallCheck(this, GameMessage);
+var DisplaySymbol = exports.DisplaySymbol = function () {
+  function DisplaySymbol(template) {
+    _classCallCheck(this, DisplaySymbol);
 
-    this.message = '';
+    this.chr = template.chr || ' ';
+    this.fg = template.fg || _color.Color.FG;
+    this.bg = template.bg || _color.Color.BG;
   }
 
-  _createClass(GameMessage, [{
+  _createClass(DisplaySymbol, [{
     key: 'render',
-    value: function render(targetDisplay) {
-      targetDisplay.clear();
-      targetDisplay.drawText(1, 1, this.message);
-    }
-  }, {
-    key: 'send',
-    value: function send(msg) {
-      this.message = '';
-      this.message = msg;
-    }
-  }, {
-    key: 'clear',
-    value: function clear() {
-      this.message = '';
+    value: function render(display, console_x, console_y) {
+      display.draw(console_x, console_y, this.chr, this.fg, this.bg);
     }
   }]);
 
-  return GameMessage;
+  return DisplaySymbol;
 }();
-
-var Message = exports.Message = new GameMessage();
 
 /***/ }),
 /* 130 */
@@ -15049,7 +15049,7 @@ var U = _interopRequireWildcard(_util);
 
 var _ui_mode = __webpack_require__(335);
 
-var _message = __webpack_require__(129);
+var _message = __webpack_require__(94);
 
 var _datastore = __webpack_require__(46);
 
@@ -15242,9 +15242,9 @@ var _get = function get(object, property, receiver) { if (object === null) objec
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _message = __webpack_require__(129);
+var _message = __webpack_require__(94);
 
-var _displaySymbol = __webpack_require__(94);
+var _displaySymbol = __webpack_require__(129);
 
 var _Map = __webpack_require__(337);
 
@@ -15451,9 +15451,12 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     value: function moveCamera(dx, dy) {
       //this.state.camera_map_x += dx;
       //this.state.camera_map_y += dy;
-      this.getAvatar().moveBy(dx, dy);
-      this.getAvatar().addTime(1);
-      this.moveCameraToAvatar();
+      if (this.getAvatar().tryWalk(dx, dy)) {
+        this.moveCameraToAvatar();
+        this.getAvatar().addTime(1);
+        return true;
+      }
+      return false;
     }
   }, {
     key: 'moveCameraToAvatar',
@@ -15899,7 +15902,7 @@ exports.TILES = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _displaySymbol = __webpack_require__(94);
+var _displaySymbol = __webpack_require__(129);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -15951,7 +15954,7 @@ var _factory = __webpack_require__(340);
 
 var _entity = __webpack_require__(341);
 
-var _entity_mixins = __webpack_require__(342);
+var _entity_mixins = __webpack_require__(343);
 
 var EntityFactory = exports.EntityFactory = new _factory.Factory(_entity.Entity, 'ENTITIES');
 
@@ -15959,7 +15962,7 @@ EntityFactory.learn({
   'name': 'avatar',
   'chr': '@',
   'fg': '#eb4',
-  'mixinName': ['TimeTracker']
+  'mixinName': ['TimeTracker', 'WalkerCorporeal']
 });
 
 /***/ }),
@@ -16023,7 +16026,7 @@ exports.Entity = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _displaySymbol = __webpack_require__(94);
+var _mixable_symbol = __webpack_require__(342);
 
 var _util = __webpack_require__(93);
 
@@ -16036,8 +16039,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // A base class that defines all entities in the game
 
 
-var Entity = exports.Entity = function (_DisplaySymbol) {
-  _inherits(Entity, _DisplaySymbol);
+var Entity = exports.Entity = function (_MixableSymbol) {
+  _inherits(Entity, _MixableSymbol);
 
   function Entity(template) {
     _classCallCheck(this, Entity);
@@ -16045,7 +16048,7 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
     var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, template));
 
     _this.name = template.name;
-    _this.state = {};
+
     _this.state.x = 0;
     _this.state.y = 0;
     _this.state.mapID = 0;
@@ -16131,10 +16134,16 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
   }]);
 
   return Entity;
-}(_displaySymbol.DisplaySymbol);
+}(_mixable_symbol.MixableSymbol);
 
 /***/ }),
 /* 342 */
+/***/ (function(module, exports) {
+
+throw new Error("Module build failed: SyntaxError: Unexpected token (66:0)\n\n\u001b[0m \u001b[90m 64 | \u001b[39m    }\n \u001b[90m 65 | \u001b[39m  }\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 66 | \u001b[39m}\n \u001b[90m    | \u001b[39m\u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 67 | \u001b[39m\u001b[0m\n");
+
+/***/ }),
+/* 343 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16143,6 +16152,10 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.WalkerCorporeal = exports.HitPoints = exports.PlayerMessager = exports.TimeTracker = exports._exampleMixin = undefined;
+
+var _message = __webpack_require__(94);
+
 var _exampleMixin = exports._exampleMixin = {
   META: {
     mixinName: 'ExampleMixin',
@@ -16177,6 +16190,102 @@ var TimeTracker = exports.TimeTracker = {
     addTime: function addTime(p) {
       this.state._TimeTracker.timeTaken += t;
     }
+  },
+
+  LISTENERS: {
+    'turnTaken': function turnTaken(evtData) {
+      this.addTime(evtData.timeUsed);
+    }
+  }
+};
+
+var PlayerMessager = exports.PlayerMessager = {
+  META: {
+    mixinName: 'PlayerMessager',
+    mixinGroupName: 'Message',
+    stateModel: {
+      timeTaken: 0
+    }
+  },
+
+  LISTENERS: {
+    'turnTaken': function turnTaken(evtData) {
+      _message.Message.send(evtData.turnAction);
+      return {};
+    },
+
+    'movementBlocked': function movementBlocked(evtData) {
+      _message.Message.send(this.getName() + ' cannot move there because ' + evtData.reasonBlocked);
+      return {};
+    }
+  }
+};
+
+var HitPoints = exports.HitPoints = {
+  META: {
+    mixinName: 'HitPoints',
+    mixinGroupName: 'Points',
+    stateModel: {
+      timeTaken: 0
+    }
+  },
+  METHODS: {
+    getTime: function getTime() {
+      return this.state._TimeTracker.timeTaken;
+    },
+    setTime: function setTime(t) {
+      this.state._TimeTracker.timeTaken = t;
+    },
+    addTime: function addTime(p) {
+      this.state._TimeTracker.timeTaken += t;
+    }
+  },
+
+  LISTENERS: {
+    'walkedBlocked': function walkedBlocked(evtData) {
+      this.addTime(evtData.timeUsed);
+    }
+  }
+};
+
+var WalkerCorporeal = exports.WalkerCorporeal = {
+  META: {
+    mixinName: 'WalkerCorporeal',
+    mixinGroupName: 'Walker',
+    stateNamespace: '_WalkerCorporeal',
+    stateModel: {},
+    initialize: function initialize() {}
+  },
+  METHODS: {
+    tryWalk: function tryWalk() {
+      var newX = this.state.x * 1 + dx * 1;
+      var newY = this.state.y * 1 + dy * 1;
+      var md = this.getMap().getMapDataAt(newX, newY);
+      if (md.entity) {
+        this.raiseMixinEvent('movementBlocked', { 'reasonBlocked': 'the space is occupied' });
+        return false;
+      }
+
+      if (md.tile.isImpassable()) {
+        this.raiseMixinEvent('movementBlocked', { 'reasonBlocked': 'the space is impassable' });
+        return false;
+      }
+
+      this.getMap().moveEntityTo(this, newX, newY);
+      this.raiseMixinEvent('turnTaken', { timeUsed: 1 });
+      return true;
+      // if (this.getMap().isPositionOpen(newX, newY)) {
+      //   this.state.x += newX;
+      //   this.state.y += newY;
+      //   this.getMap().updateEntityPosition(this, this.state.x, this.state.y);
+      //
+      //   this.raiseMixinEvent('turnTaken', {timeUsed: 1});
+      //
+      //   return true;
+      // }
+      return false;
+    }
+
   }
 };
 
