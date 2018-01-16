@@ -15932,12 +15932,15 @@ var _factory = __webpack_require__(340);
 
 var _entity = __webpack_require__(341);
 
+var _entity_mixins = __webpack_require__(342);
+
 var EntityFactory = exports.EntityFactory = new _factory.Factory(_entity.Entity, 'ENTITIES');
 
 EntityFactory.learn({
   'name': 'avatar',
   'chr': '@',
-  'fg': '#eb4'
+  'fg': '#eb4',
+  'mixinName': ['TimeTracker']
 });
 
 /***/ }),
@@ -16110,6 +16113,53 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
 
   return Entity;
 }(_displaySymbol.DisplaySymbol);
+
+/***/ }),
+/* 342 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var _exampleMixin = exports._exampleMixin = {
+  META: {
+    mixinName: 'ExampleMixin',
+    mixinGroupName: 'ExampleMixinGroup',
+    stateNamespace: '_ExampleMixin',
+    stateModel: {
+      foo: 10
+    },
+    initialize: function initialize() {}
+  },
+  METHODS: {
+    method1: function method1(p) {}
+  }
+};
+
+var TimeTracker = exports.TimeTracker = {
+  META: {
+    mixinName: 'TimeTracker',
+    mixinGroupName: 'Tracker',
+    stateNamespace: '_TimeTracker',
+    stateModel: {
+      timeTaken: 0
+    }
+  },
+  METHODS: {
+    getTime: function getTime() {
+      return this.state._TimeTracker.timeTaken;
+    },
+    setTime: function setTime(t) {
+      this.state._TimeTracker.timeTaken = t;
+    },
+    addTime: function addTime(p) {
+      this.state._TimeTracker.timeTaken += t;
+    }
+  }
+};
 
 /***/ })
 /******/ ]);
