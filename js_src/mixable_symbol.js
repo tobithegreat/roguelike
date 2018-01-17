@@ -10,16 +10,18 @@ export class MixableSymbol extends DisplaySymbol {
     this.mixinTracker = {};
 
     // record/track any mixins this entity has
+    console.dir(template);
 
     if (template.mixinNames) {
       for (let mi = 0; mi<template.mixinNames.length; mi++) {
+        console.log(template.mixinNames[mi]);
         this.mixins.push(E[template.mixinNames[mi]]);
         this.mixinTracker[template.mixinNames[mi]] = true;
       }
     }
 
     // set up mixin state
-    for (let i=0; mi< this.mixins.length; mi++) {
+    for (let mi=0; mi< this.mixins.length; mi++) {
       let m = this.mixins[mi];
       if (m.META.stateNamespace) {
         this.state[m.META.stateNamespace] = {};
@@ -29,19 +31,20 @@ export class MixableSymbol extends DisplaySymbol {
             this.state[m.META.stateNamespace][sbase] = m.META.stateModel[sbase];
           }
         }
-      }
 
-      if (m.METHODS) {
-        for (let method in m.METHODS) {
-          this[method] = m.METHODS[method];
+
+        if (m.METHODS) {
+          for (let method in m.METHODS) {
+            this[method] = m.METHODS[method];
+          }
         }
       }
 
       // initialize mixins after all attributes, functions, listeners, etc. are in place
-      for (mi = 0; mi < this.mixins.length; mi++) {
+      for (let mi = 0; mi < this.mixins.length; mi++) {
         let mixin = this.mixins[mi];
         if (mixin.META.hasOwnProperty('initialize')) {
-          mixin.META.init.call(this,template);
+          mixin.META.initialize.call(this,template);
         }
       }
     }

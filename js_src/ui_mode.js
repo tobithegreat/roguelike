@@ -187,7 +187,7 @@ export class PlayMode extends UIMode {
   renderAvatar(display) {
     display.clear();
     display.drawText(0,0,"Avatar");
-    display.drawText(0,2,"time:" + this.getAvatar().getTime());
+    display.drawText(0,2,"time: " + this.getAvatar().getTime());
     //display.drawText(0,4,"loc:" + this.getAvatar().getPos());
   }
 
