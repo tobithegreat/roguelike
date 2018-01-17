@@ -73,16 +73,13 @@ export class PlayMode extends UIMode {
   setupNewGame() {
     let m = MapMaker({
       xdim: 20,
-      ydim: 20,
-      mapType: 'basic types'
-    }
-    );
+      ydim: 20});
     this.state.mapID = m.getID();
+    Message.send("building the map...");
+    this.game.renderMessage();
     m.build();
-
     this.state.camera_map_x = 0;
     this.state.camera_map_y = 0;
-    this.cameraSymbol = new DisplaySymbol({'name':'avatar', 'chr':'@', 'fg':'#eb4'});
     let a = EntityFactory.create('avatar');
     this.state.avatarID = a.getID();
     m.addEntityAtRandomPos(a);

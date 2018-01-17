@@ -57,6 +57,13 @@ export class Entity extends MixableSymbol {
     this.state.id = newID;
   }
 
+  destroy() {
+    //remove from map
+    //remove from datastore
+    this.getMap().extractEntity(this);
+    delete DATASTORE[this.getID()];
+  }
+
   moveBy(dx,dy) {
 
     let newX = this.state.x*1 + dx*1;

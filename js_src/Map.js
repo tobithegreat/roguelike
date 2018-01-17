@@ -72,6 +72,12 @@ export class Map {
     this.state.entityIDToMapPos[ent.getID()] = `${newMapX},${newMapY}`;
   }
 
+  extractEntity(ent) {
+    delete this.state.mapPostoEntityID[this.state.entityIDToMapPos[ent.getID()]];
+    delete this.state.entityIDToMapPos[ent.getID()];
+    return ent;
+  }
+
   addEntityAt(ent, mapX, mapY) {
     let pos = `${mapX},${mapY}`;
     this.state.entityIDToMapPos[ent.getID()] = pos;
@@ -102,6 +108,18 @@ export class Map {
       return true;
     }
     return false;
+  }
+
+  getTargetPositionInfo(x,y) {
+    let info = {
+      entity: '',
+      tile: ''
+    };
+    let entID = this.state.entityIDToMapPos[`${x},${y}`];
+    if (entID) {
+      info.entity = DATASTORE.ENTITIES[entID];
+    }
+    return info;
   }
 
   render(display, camera_map_x, camera_map_y) {
