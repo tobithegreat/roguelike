@@ -35,7 +35,7 @@ export let TimeTracker = {
     setTime: function(t) {
       this.state._TimeTracker.timeTaken = t;
     },
-    addTime: function(p) {
+    addTime: function(t) {
       this.state._TimeTracker.timeTaken += t;
     }
   },
@@ -170,10 +170,11 @@ export let WalkerCorporeal = {
     }
   },
   METHODS:{
-    tryWalk: function() {
-      let newX = this.state.x*1 + dx*1;
-      let newY = this.state.y*1 + dy*1;
-
+    tryWalk: function(dx,dy) {
+      let newX = this.getX()*1 + dx*1;
+      let newY = this.getY()*1 + dy*1;
+      console.log("newX: " + newX + " newY: " + newY);
+      console.log("dx: " + dx + " dy: " + dy);
       // if (this.getMap().isPositionOpen(newX, newY)) {
       //   this.state.x += newX;
       //   this.state.y += newY;
@@ -185,17 +186,22 @@ export let WalkerCorporeal = {
       // }
 
       let targetPositionInfo = this.getMap().getTargetPositionInfo(newX,newY);
+      console.dir(targetPositionInfo);
       if (targetPositionInfo.entity) {
         this.raiseMixinEvent('bumpEntity',
         {actor:this, target:target.targetPositionInfo.entity});
-      } else if (targetPositionInfo.tile.isImpassable()) {
-        this.raiseMixinEvent('walkBlocked', {reason: 'Theres something in the way'});
-        return false
-      } else {
-        this.state.x = newX;
-        this.state.y = newY;
-      }
         return false;
+      } else if (targetPositionInfo.tile.isImpassable()) {
+        console.log("cant pass");
+        this.raiseMixinEvent('walkBlocked', {reason: 'Theres something in the way'});
+        return false;
+      }
+      this.getMap().updateEntityPosition(this, newX, newY);
+        // this.state.x = newX;
+        // this.state.y = newY;
+
+
+        return true;
     },
   },
   LISTENERS: {

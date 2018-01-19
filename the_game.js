@@ -15316,7 +15316,6 @@ var StartUpMode = exports.StartUpMode = function (_UIMode) {
     key: 'enter',
     value: function enter() {
       _get(StartUpMode.prototype.__proto__ || Object.getPrototypeOf(StartUpMode.prototype), 'enter', this).call(this);
-      console.log("game starting");
     }
   }, {
     key: 'render',
@@ -15329,7 +15328,6 @@ var StartUpMode = exports.StartUpMode = function (_UIMode) {
     key: 'handleInput',
     value: function handleInput(eventType, evt) {
       if (eventType == 'keyup') {
-        console.dir(this);
         this.game.switchMode('persistence');
       }
       return true;
@@ -15360,8 +15358,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'setupNewGame',
     value: function setupNewGame() {
       var m = (0, _Map.MapMaker)({
-        xdim: 20,
-        ydim: 20 });
+        xdim: 50,
+        ydim: 50 });
       this.state.mapID = m.getID();
       _message.Message.send("building the map...");
       this.game.renderMessage();
@@ -15401,14 +15399,14 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.drawText(1, 2, "press Enter to win");
       display.drawText(1, 3, "press Escape to lose");
       _datastore.DATASTORE.MAPS[this.state.mapID].render(display, this.state.camera_map_x, this.state.camera_map_y);
-      this.cameraSymbol.render(display, display.getOptions().width / 2, display.getOptions().height / 2);
     }
   }, {
     key: 'handleInput',
     value: function handleInput(eventType, evt) {
       if (eventType == 'keyup') {
+        var avatarMoved = false;
+
         if (evt.key == "h") {
-          console.dir(this);
           this.game.switchMode('win');
         } else if (evt.key == 'p') {
           this.game.switchMode('persistence');
@@ -15417,43 +15415,46 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
 
         // MOVEMENT WITH NUMPAD KEYS
         else if (evt.key == '4') {
-            this.moveCamera(-1, 0);
+            this.moveAvatar(-1, 0);
             return true;
           } else if (evt.key == '7') {
-            this.moveCamera(-1, -1);
+            this.moveAvatar(-1, -1);
             return true;
           } else if (evt.key == '8') {
-            this.moveCamera(0, -1);
+            this.moveAvatar(0, -1);
             return true;
           } else if (evt.key == '9') {
-            this.moveCamera(1, -1);
+            this.moveAvatar(1, -1);
             return true;
           } else if (evt.key == '6') {
-            this.moveCamera(1, 0);
+            this.moveAvatar(1, 0);
             return true;
           } else if (evt.key == '3') {
-            this.moveCamera(1, 1);
+            this.moveAvatar(1, 1);
             return true;
           } else if (evt.key == '2') {
-            this.moveCamera(0, 1);
+            this.moveAvatar(0, 1);
             return true;
           } else if (evt.key == '1') {
-            this.moveCamera(-1, 1);
+            this.moveAvatar(-1, 1);
             return true;
           }
       }
-      return true;
+      return false;
     }
   }, {
-    key: 'moveCamera',
-    value: function moveCamera(dx, dy) {
+    key: 'moveAvatar',
+    value: function moveAvatar(dx, dy) {
       //this.state.camera_map_x += dx;
       //this.state.camera_map_y += dy;
       if (this.getAvatar().tryWalk(dx, dy)) {
+        //this.getAvatar().moveBy(dx,dy);
+        console.log("move");
         this.moveCameraToAvatar();
         this.getAvatar().addTime(1);
         return true;
       }
+      console.log("don't move");
       return false;
     }
   }, {
@@ -15768,7 +15769,9 @@ var Map = exports.Map = function () {
     value: function updateEntityPosition(ent, newMapX, newMapY) {
       var oldPos = this.state.entityIDToMapPos[ent.getID()];
       delete this.state.mapPostoEntityID[oldPos];
-      this.state.entityIDToMapPos[newMapX + ',' + newMapY] = ent.getID();
+      ent.setX(newMapX);
+      ent.setY(newMapY);
+      this.state.mapPostoEntityID[newMapX + ',' + newMapY] = ent.getID();
 
       this.state.entityIDToMapPos[ent.getID()] = newMapX + ',' + newMapY;
     }
@@ -15820,7 +15823,7 @@ var Map = exports.Map = function () {
     value: function getTargetPositionInfo(x, y) {
       var info = {
         entity: '',
-        tile: ''
+        tile: this.getTile(x, y)
       };
       var entID = this.state.entityIDToMapPos[x + ',' + y];
       if (entID) {
@@ -16351,7 +16354,7 @@ var TimeTracker = exports.TimeTracker = {
     setTime: function setTime(t) {
       this.state._TimeTracker.timeTaken = t;
     },
-    addTime: function addTime(p) {
+    addTime: function addTime(t) {
       this.state._TimeTracker.timeTaken += t;
     }
   },
@@ -16485,10 +16488,11 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
     initialize: function initialize() {}
   },
   METHODS: {
-    tryWalk: function tryWalk() {
-      var newX = this.state.x * 1 + dx * 1;
-      var newY = this.state.y * 1 + dy * 1;
-
+    tryWalk: function tryWalk(dx, dy) {
+      var newX = this.getX() * 1 + dx * 1;
+      var newY = this.getY() * 1 + dy * 1;
+      console.log("newX: " + newX + " newY: " + newY);
+      console.log("dx: " + dx + " dy: " + dy);
       // if (this.getMap().isPositionOpen(newX, newY)) {
       //   this.state.x += newX;
       //   this.state.y += newY;
@@ -16500,16 +16504,21 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
       // }
 
       var targetPositionInfo = this.getMap().getTargetPositionInfo(newX, newY);
+      console.dir(targetPositionInfo);
       if (targetPositionInfo.entity) {
         this.raiseMixinEvent('bumpEntity', { actor: this, target: target.targetPositionInfo.entity });
+        return false;
       } else if (targetPositionInfo.tile.isImpassable()) {
+        console.log("cant pass");
         this.raiseMixinEvent('walkBlocked', { reason: 'Theres something in the way' });
         return false;
-      } else {
-        this.state.x = newX;
-        this.state.y = newY;
       }
-      return false;
+      this.getMap().updateEntityPosition(this, newX, newY);
+      // this.state.x = newX;
+      // this.state.y = newY;
+
+
+      return true;
     }
   },
   LISTENERS: {}

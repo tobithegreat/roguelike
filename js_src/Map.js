@@ -67,7 +67,9 @@ export class Map {
   updateEntityPosition(ent, newMapX, newMapY) {
     let oldPos = this.state.entityIDToMapPos[ent.getID()];
     delete this.state.mapPostoEntityID[oldPos];
-    this.state.entityIDToMapPos[`${newMapX},${newMapY}`] = ent.getID();
+    ent.setX(newMapX);
+    ent.setY(newMapY);
+    this.state.mapPostoEntityID[`${newMapX},${newMapY}`] = ent.getID();
 
     this.state.entityIDToMapPos[ent.getID()] = `${newMapX},${newMapY}`;
   }
@@ -113,7 +115,7 @@ export class Map {
   getTargetPositionInfo(x,y) {
     let info = {
       entity: '',
-      tile: ''
+      tile: this.getTile(x,y),
     };
     let entID = this.state.entityIDToMapPos[`${x},${y}`];
     if (entID) {

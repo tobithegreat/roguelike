@@ -41,7 +41,6 @@ class UIMode {
 export class StartUpMode extends UIMode {
   enter() {
     super.enter();
-    console.log("game starting");
   }
 
   render(display) {
@@ -52,7 +51,6 @@ export class StartUpMode extends UIMode {
 
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
-      console.dir(this);
     this.game.switchMode('persistence');
     }
     return true;
@@ -72,8 +70,8 @@ export class PlayMode extends UIMode {
 
   setupNewGame() {
     let m = MapMaker({
-      xdim: 20,
-      ydim: 20});
+      xdim: 50,
+      ydim: 50});
     this.state.mapID = m.getID();
     Message.send("building the map...");
     this.game.renderMessage();
@@ -111,14 +109,14 @@ export class PlayMode extends UIMode {
     display.drawText(1,2,"press Enter to win");
     display.drawText(1,3,"press Escape to lose");
     DATASTORE.MAPS[this.state.mapID].render(display,this.state.camera_map_x,this.state.camera_map_y);
-    this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
   }
 
 
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
+      let avatarMoved = false;
+
       if (evt.key == "h") {
-        console.dir(this);
         this.game.switchMode('win');
       }
       else if (evt.key == 'p') {
@@ -129,49 +127,53 @@ export class PlayMode extends UIMode {
 
       // MOVEMENT WITH NUMPAD KEYS
       else if (evt.key == '4') {
-        this.moveCamera(-1, 0);
+        this.moveAvatar(-1,0);
         return true;
       }
       else if (evt.key == '7') {
-        this.moveCamera(-1, -1);
+        this.moveAvatar(-1, -1);
         return true;
       }
       else if (evt.key == '8') {
-        this.moveCamera(0, -1);
+        this.moveAvatar(0, -1);
         return true;
       }
       else if (evt.key == '9') {
-        this.moveCamera(1, -1);
+        this.moveAvatar(1, -1);
         return true;
       }
       else if (evt.key == '6') {
-        this.moveCamera(1, 0);
+        this.moveAvatar(1, 0);
         return true;
       }
       else if (evt.key == '3') {
-        this.moveCamera(1,1);
+        this.moveAvatar(1,1);
         return true;
       }
       else if (evt.key == '2') {
-        this.moveCamera(0, 1);
+        this.moveAvatar(0, 1);
         return true;
       }
       else if (evt.key == '1') {
-        this.moveCamera(-1, 1);
+        this.moveAvatar(-1, 1);
         return true;
       }
+
     }
-    return true;
+    return false;
   }
 
-  moveCamera(dx,dy) {
+  moveAvatar(dx,dy) {
     //this.state.camera_map_x += dx;
     //this.state.camera_map_y += dy;
     if (this.getAvatar().tryWalk(dx,dy)) {
+      //this.getAvatar().moveBy(dx,dy);
+      console.log("move");
       this.moveCameraToAvatar();
       this.getAvatar().addTime(1);
       return true;
     }
+      console.log("don't move");
     return false;
   }
 
