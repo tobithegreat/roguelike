@@ -10,3 +10,12 @@ EntityFactory.learn({
   'fg': '#eb4',
   'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager']
 });
+
+EntityFactory.learn({
+  name: 'moss',
+  descr: 'a patch of tiny, fuzzy-looking plants',
+  chr: '%',
+  fg: '#3a4',
+  maxHp: 1,
+  mixins: ["HitPoints"]
+});

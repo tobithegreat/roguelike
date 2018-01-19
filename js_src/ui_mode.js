@@ -82,6 +82,12 @@ export class PlayMode extends UIMode {
     this.state.avatarID = a.getID();
     m.addEntityAtRandomPos(a);
     this.moveCameraToAvatar();
+
+    // Populate map with moss
+    for (let i = 0; i < 10; i++) {
+      let t = EntityFactory.create('moss');
+      m.addEntityAtRandomPos(t);
+    }
   }
 
   enter() {

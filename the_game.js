@@ -15370,6 +15370,12 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       this.state.avatarID = a.getID();
       m.addEntityAtRandomPos(a);
       this.moveCameraToAvatar();
+
+      // Populate map with moss
+      for (var i = 0; i < 10; i++) {
+        var t = _entityTemplate.EntityFactory.create('moss');
+        m.addEntityAtRandomPos(t);
+      }
     }
   }, {
     key: 'enter',
@@ -16019,6 +16025,15 @@ EntityFactory.learn({
   'chr': '@',
   'fg': '#eb4',
   'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager']
+});
+
+EntityFactory.learn({
+  name: 'moss',
+  descr: 'a patch of tiny, fuzzy-looking plants',
+  chr: '%',
+  fg: '#3a4',
+  maxHp: 1,
+  mixins: ["HitPoints"]
 });
 
 /***/ }),
