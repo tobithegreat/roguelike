@@ -16018,7 +16018,7 @@ EntityFactory.learn({
   'name': 'avatar',
   'chr': '@',
   'fg': '#eb4',
-  'mixinNames': ['TimeTracker', 'WalkerCorporeal']
+  'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager']
 });
 
 /***/ }),
@@ -16370,9 +16370,7 @@ var PlayerMessager = exports.PlayerMessager = {
   META: {
     mixinName: 'PlayerMessager',
     mixinGroupName: 'Message',
-    stateModel: {
-      timeTaken: 0
-    }
+    stateModel: {}
   },
 
   LISTENERS: {
@@ -16514,6 +16512,7 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
         return false;
       }
       this.getMap().updateEntityPosition(this, newX, newY);
+      this.raiseMixinEvent('turnTaken', { timeUsed: 1, turnAction: "walk" });
       // this.state.x = newX;
       // this.state.y = newY;
 

@@ -52,7 +52,7 @@ export let PlayerMessager = {
     mixinName: 'PlayerMessager',
     mixinGroupName: 'Message',
     stateModel: {
-      timeTaken: 0
+
     }
   },
 
@@ -197,6 +197,7 @@ export let WalkerCorporeal = {
         return false;
       }
       this.getMap().updateEntityPosition(this, newX, newY);
+      this.raiseMixinEvent('turnTaken', {timeUsed: 1, turnAction:"walk"});
         // this.state.x = newX;
         // this.state.y = newY;
 

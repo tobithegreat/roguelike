@@ -8,5 +8,5 @@ EntityFactory.learn({
   'name': 'avatar',
   'chr': '@',
   'fg': '#eb4',
-  'mixinNames': ['TimeTracker', 'WalkerCorporeal']
+  'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager']
 });
