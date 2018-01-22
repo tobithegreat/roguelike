@@ -8,7 +8,7 @@ EntityFactory.learn({
   'name': 'avatar',
   'chr': '@',
   'fg': '#eb4',
-  'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager']
+  'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager', 'MeleeAttacker']
 });
 
 EntityFactory.learn({
@@ -16,6 +16,6 @@ EntityFactory.learn({
   descr: 'a patch of tiny, fuzzy-looking plants',
   chr: '%',
   fg: '#3a4',
-  maxHp: 1,
-  mixins: ["HitPoints"]
+  maxHp: 2,
+  'mixinNames': ["HitPoints", 'MeleeAttacker']
 });

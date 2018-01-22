@@ -15358,8 +15358,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'setupNewGame',
     value: function setupNewGame() {
       var m = (0, _Map.MapMaker)({
-        xdim: 50,
-        ydim: 50 });
+        xdim: 20,
+        ydim: 20 });
       this.state.mapID = m.getID();
       _message.Message.send("building the map...");
       this.game.renderMessage();
@@ -15372,7 +15372,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       this.moveCameraToAvatar();
 
       // Populate map with moss
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 2; i++) {
         var t = _entityTemplate.EntityFactory.create('moss');
         m.addEntityAtRandomPos(t);
       }
@@ -15480,6 +15480,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.clear();
       display.drawText(0, 0, "Avatar");
       display.drawText(0, 2, "time: " + this.getAvatar().getTime());
+      // display.drawText(0,4,"Your HP: " + this.getAvatar().getCurHp());
       //display.drawText(0,4,"loc:" + this.getAvatar().getPos());
     }
   }]);
@@ -15560,6 +15561,10 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
     value: function enter() {
       _get(PersistenceMode.prototype.__proto__ || Object.getPrototypeOf(PersistenceMode.prototype), 'enter', this).call(this);
       console.log("game in persistence");
+      if (window.localStorage.getItem('bbsavegame')) {
+        this.game.hasSaved = true;
+        console.log("BBSAVED");
+      }
     }
   }, {
     key: 'render',
@@ -15831,10 +15836,12 @@ var Map = exports.Map = function () {
         entity: '',
         tile: this.getTile(x, y)
       };
-      var entID = this.state.entityIDToMapPos[x + ',' + y];
+      var entID = this.state.mapPostoEntityID[x + ',' + y];
+      console.dir("ENTID: " + entID);
       if (entID) {
         info.entity = _datastore.DATASTORE.ENTITIES[entID];
       }
+
       return info;
     }
   }, {
@@ -15887,7 +15894,7 @@ var TILE_GRID_GENERATOR = {
     var gen = new _rotJs2.default.Map.Cellular(xd, yd, { connected: true });
     var origRngState = _rotJs2.default.RNG.getState();
     _rotJs2.default.RNG.setState(rngState);
-    gen.randomize(.49);
+    gen.randomize(.10);
     gen.create();
 
     gen.connect(function (x, y, isWall) {
@@ -16024,7 +16031,7 @@ EntityFactory.learn({
   'name': 'avatar',
   'chr': '@',
   'fg': '#eb4',
-  'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager']
+  'mixinNames': ['TimeTracker', 'WalkerCorporeal', 'PlayerMessager', 'MeleeAttacker']
 });
 
 EntityFactory.learn({
@@ -16032,8 +16039,8 @@ EntityFactory.learn({
   descr: 'a patch of tiny, fuzzy-looking plants',
   chr: '%',
   fg: '#3a4',
-  maxHp: 1,
-  mixins: ["HitPoints"]
+  maxHp: 2,
+  'mixinNames': ["HitPoints", 'MeleeAttacker']
 });
 
 /***/ }),
@@ -16071,12 +16078,16 @@ var Factory = exports.Factory = function () {
     }
   }, {
     key: 'create',
-    value: function create(templateName) {
-      var product = new this.productClass(this.knownTemplates[templateName]);
-
-      _datastore.DATASTORE[this.datastoreNamespace][product.getID()] = product;
-
-      return product;
+    value: function create(templateName, restorationState) {
+      var p = new this.productClass(this.knownTemplates[templateName]);
+      if (restorationState) {
+        p.fromState(restorationState);
+      }
+      _datastore.DATASTORE[this.datastoreNamespace][p.getID()] = p;
+      return p;
+      // let product = new this.productClass(this.knownTemplates[templateName]);
+      // DATASTORE[this.datastoreNamespace][product.getID()] = product;
+      // return product;
     }
   }]);
 
@@ -16118,7 +16129,7 @@ var Entity = exports.Entity = function (_MixableSymbol) {
 
     var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, template));
 
-    _this.name = template.name;
+    _this.state.name = template.name;
 
     _this.state.x = 0;
     _this.state.y = 0;
@@ -16261,6 +16272,7 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
     _this.mixinTracker = {};
 
     // record/track any mixins this entity has
+    console.log("creating mixable symbol from this template:");
     console.dir(template);
 
     if (template.mixinNames) {
@@ -16334,7 +16346,7 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ActorWanderer = exports.WalkerCorporeal = exports.HitPoints = exports.MeleeAttacker = exports.PlayerMessager = exports.TimeTracker = exports._exampleMixin = undefined;
+exports.ActorWanderer = exports.WalkerCorporeal = exports.HitPoints = exports.MeleeAttacker = exports.PlayerMessager = exports.KillTracker = exports.TimeTracker = exports._exampleMixin = undefined;
 
 var _message = __webpack_require__(94);
 
@@ -16381,10 +16393,31 @@ var TimeTracker = exports.TimeTracker = {
   }
 };
 
+var KillTracker = exports.KillTracker = {
+  META: {
+    mixinName: 'KillTracker',
+    mixinGroup: 'Tracker',
+    stateNamespace: '_KillTracker',
+    stateModel: {
+      killCounter: 0
+    }
+  },
+  METHODS: {
+    getNumKills: function getNumKills() {
+      return this.state._KillTracker.killCounter;
+    }
+  },
+  LISTENERS: {
+    'kills': function kills(evtData) {
+      this.state._KillTracker.killCounter++;
+    }
+  }
+};
+
 var PlayerMessager = exports.PlayerMessager = {
   META: {
     mixinName: 'PlayerMessager',
-    mixinGroupName: 'Message',
+    mixinGroupName: 'PlayerMessager',
     stateModel: {}
   },
 
@@ -16401,10 +16434,21 @@ var PlayerMessager = exports.PlayerMessager = {
 
     'attacks': function attacks(evtData) {
       _message.Message.send(this.getName() + "attacks" + evtData.target);
+      retu;
+    },
+
+    'damagedBy': function damagedBy(evtData) {
+      _message.Message.send(this.getName() + ' took ' + evtData.damageAmount + ' from ' + evtData.damageSrc.getName());
     },
 
     'damages': function damages(evtData) {
-      _message.Message.send(this.getName() + " deals " + evtData.damageAmount + " damage to" + evtData.target.getName());
+      _message.Message.send(this.getName() + ' dealt ' + evtData.damageAmount + ' to ' + evtData.target.getName());
+    },
+    'killed': function killed(evtData) {
+      _message.Message.send(this.getName() + ' killed by ' + evtData.killer.getName());
+    },
+    'kills': function kills(evtData) {
+      _message.Message.send(this.getName() + ' kills ' + evtData.kills.getName());
     }
   }
 };
@@ -16412,27 +16456,36 @@ var PlayerMessager = exports.PlayerMessager = {
 var MeleeAttacker = exports.MeleeAttacker = {
   META: {
     mixinName: 'MeleeAttacker',
-    mixinGroupName: 'Attacker',
-    stateNamespace: '_TimeTracker',
+    mixinGroupName: 'BumpActivated',
+    stateNamespace: '_MeleeAttacker',
     stateModel: {
-      timeTaken: 0
+      meleeHit: 0,
+      meleeDamage: 0
+    },
+    initialize: function initialize(template) {
+      this.state._MeleeAttacker.meleeHit = template.meleeHit || 1;
+      this.state._MeleeAttacker.meleeDamage = template.meleeDamage || 1;
     }
   },
   METHODS: {
+    getMeleeHit: function getMeleeHit() {
+      return this.state._MeleeAttacker.meleeHit;
+    },
+    setMeleeHit: function setMeleeHit(h) {
+      this.state._MeleeAttacker.meleeHit = h;
+    },
     getMeleeDamage: function getMeleeDamage() {
-      return this.state._TimeTracker.timeTaken;
+      return this.state._MeleeAttacker.meleeDamage;
     },
-    setTime: function setTime(t) {
-      this.state._TimeTracker.timeTaken = t;
-    },
-    addTime: function addTime(p) {
-      this.state._TimeTracker.timeTaken += t;
+    setMeleeDamage: function setMeleeDamage(d) {
+      this.state._MeleeAttacker.meleeDamage = d;
     }
   },
 
   LISTENERS: {
     'bumpEntity': function bumpEntity(evtData) {
-      evtData.target.raiseMixinEvent('damaged', { src: this, damageAmount: this.getDama });
+      evtData.target.raiseMixinEvent('damagedBy', { 'damageSrc': this, 'damageAmount': this.getMeleeDamage() });
+      //return evtResp;
     }
   }
 };
@@ -16448,7 +16501,7 @@ var HitPoints = exports.HitPoints = {
     },
     initialize: function initialize(template) {
       this.state._HitPoints.maxHp = template.maxHp || 1;
-      this.state._HitPoints.curHp = template.curHp || this.state_HitPoints.maxHp;
+      this.state._HitPoints.curHp = template.curHp || this.state._HitPoints.maxHp;
     }
   },
   METHODS: {
@@ -16465,7 +16518,7 @@ var HitPoints = exports.HitPoints = {
       if (dHP < 0) {
         return;
       }
-      this.state._HitPoints.curHp -= dHp;
+      this.state._HitPoints.curHp -= dHP;
     },
     setMaxHp: function setMaxHp(newMaxHP) {
       this.state._HitPoints.maxHp = newMaxHP;
@@ -16479,15 +16532,16 @@ var HitPoints = exports.HitPoints = {
   },
 
   LISTENERS: {
-    'walkedBlocked': function walkedBlocked(evtData) {
-      this.addTime(evtData.timeUsed);
-    },
-    'damaged': function damaged(evtData) {
+    'damagedBy': function damagedBy(evtData) {
       this.loseHp(evtData.damageAmount);
-      evtData.src.raiseMixinEvent('damages', { target: this, damageAmount: evtData.damageAmount });
-      if (this.getHp() == 0) {
-        this.raiseMixinEvent("killedBy", { 'killer': evtData.damageSrc });
+      evtData.damageSrc.raiseMixinEvent('damages', { target: this, damageAmount: evtData.damageAmount });
+      if (this.getCurHp() == 0) {
+        this.raiseMixinEvent("killed", { 'killer': evtData.damageSrc });
+        evtData.damageSrc.raiseMixinEvent("kills", { 'kills': this });
       }
+    },
+    'killed': function killed(evtData) {
+      this.destroy();
     }
   }
 };
@@ -16504,8 +16558,8 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
     tryWalk: function tryWalk(dx, dy) {
       var newX = this.getX() * 1 + dx * 1;
       var newY = this.getY() * 1 + dy * 1;
-      console.log("newX: " + newX + " newY: " + newY);
-      console.log("dx: " + dx + " dy: " + dy);
+      // console.log("newX: " + newX + " newY: " + newY);
+      // console.log("dx: " + dx + " dy: " + dy);
       // if (this.getMap().isPositionOpen(newX, newY)) {
       //   this.state.x += newX;
       //   this.state.y += newY;
@@ -16517,13 +16571,12 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
       // }
 
       var targetPositionInfo = this.getMap().getTargetPositionInfo(newX, newY);
-      console.dir(targetPositionInfo);
+      // console.dir(targetPositionInfo);
       if (targetPositionInfo.entity) {
-        this.raiseMixinEvent('bumpEntity', { actor: this, target: target.targetPositionInfo.entity });
+        this.raiseMixinEvent('bumpEntity', { target: targetPositionInfo.entity });
         return false;
       } else if (targetPositionInfo.tile.isImpassable()) {
-        console.log("cant pass");
-        this.raiseMixinEvent('walkBlocked', { reason: 'Theres something in the way' });
+        this.raiseMixinEvent('movementBlocked', { reason: 'Theres something in the way' });
         return false;
       }
       this.getMap().updateEntityPosition(this, newX, newY);

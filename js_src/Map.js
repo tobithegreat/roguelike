@@ -117,10 +117,12 @@ export class Map {
       entity: '',
       tile: this.getTile(x,y),
     };
-    let entID = this.state.entityIDToMapPos[`${x},${y}`];
+    let entID = this.state.mapPostoEntityID[`${x},${y}`];
+    console.dir("ENTID: " + entID);
     if (entID) {
       info.entity = DATASTORE.ENTITIES[entID];
     }
+
     return info;
   }
 
@@ -167,7 +169,7 @@ let TILE_GRID_GENERATOR = {
      let gen = new ROT.Map.Cellular(xd, yd, { connected: true });
      let origRngState = ROT.RNG.getState();
      ROT.RNG.setState(rngState);
-     gen.randomize(.49);
+     gen.randomize(.10);
      gen.create();
 
     gen.connect(function(x,y,isWall) {

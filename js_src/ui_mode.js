@@ -70,8 +70,8 @@ export class PlayMode extends UIMode {
 
   setupNewGame() {
     let m = MapMaker({
-      xdim: 50,
-      ydim: 50});
+      xdim: 20,
+      ydim: 20});
     this.state.mapID = m.getID();
     Message.send("building the map...");
     this.game.renderMessage();
@@ -84,7 +84,7 @@ export class PlayMode extends UIMode {
     this.moveCameraToAvatar();
 
     // Populate map with moss
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 2; i++) {
       let t = EntityFactory.create('moss');
       m.addEntityAtRandomPos(t);
     }
@@ -196,6 +196,7 @@ export class PlayMode extends UIMode {
     display.clear();
     display.drawText(0,0,"Avatar");
     display.drawText(0,2,"time: " + this.getAvatar().getTime());
+    // display.drawText(0,4,"Your HP: " + this.getAvatar().getCurHp());
     //display.drawText(0,4,"loc:" + this.getAvatar().getPos());
   }
 
@@ -237,6 +238,10 @@ export class PersistenceMode extends UIMode {
   enter() {
     super.enter();
     console.log("game in persistence");
+    if (window.localStorage.getItem('bbsavegame')) {
+      this.game.hasSaved = true;
+      console.log("BBSAVED");
+    }
   }
 
   render(display) {

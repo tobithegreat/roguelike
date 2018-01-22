@@ -10,6 +10,7 @@ export class MixableSymbol extends DisplaySymbol {
     this.mixinTracker = {};
 
     // record/track any mixins this entity has
+    console.log("creating mixable symbol from this template:");
     console.dir(template);
 
     if (template.mixinNames) {
