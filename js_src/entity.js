@@ -7,7 +7,7 @@ export class Entity extends MixableSymbol {
   constructor(template) {
     super(template);
     this.state.name = template.name;
-
+    this.state.templateName = template.templateName || this.state.name;
     this.state.x = 0;
     this.state.y = 0;
     this.state.mapID = 0;

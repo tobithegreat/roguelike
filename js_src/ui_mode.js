@@ -311,6 +311,8 @@ export class PersistenceMode extends UIMode {
 
     for (let savedEntityId in state.ENTITIES) {
       let entState = JSON.parse(state.ENTITIES[savedEntityId]);
+      console.log("templateName: " + entState.templateName);
+      console.dir(entState);
       EntityFactory.create(entState.templateName,entState);
     }
 

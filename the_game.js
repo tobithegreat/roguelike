@@ -15635,6 +15635,8 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
 
       for (var savedEntityId in state.ENTITIES) {
         var entState = JSON.parse(state.ENTITIES[savedEntityId]);
+        console.log("templateName: " + entState.templateName);
+        console.dir(entState);
         _entityTemplate.EntityFactory.create(entState.templateName, entState);
       }
 
@@ -16138,7 +16140,7 @@ var Entity = exports.Entity = function (_MixableSymbol) {
     var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, template));
 
     _this.state.name = template.name;
-
+    _this.state.templateName = template.templateName || _this.state.name;
     _this.state.x = 0;
     _this.state.y = 0;
     _this.state.mapID = 0;
