@@ -70,8 +70,8 @@ export class PlayMode extends UIMode {
 
   setupNewGame() {
     let m = MapMaker({
-      xdim: 20,
-      ydim: 20});
+      xdim: 40,
+      ydim: 40});
     this.state.mapID = m.getID();
     Message.send("building the map...");
     this.game.renderMessage();
@@ -84,7 +84,7 @@ export class PlayMode extends UIMode {
     this.moveCameraToAvatar();
 
     // Populate map with moss
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 10; i++) {
       let t = EntityFactory.create('moss');
       m.addEntityAtRandomPos(t);
     }
@@ -92,7 +92,10 @@ export class PlayMode extends UIMode {
 
   enter() {
     Message.send("entering PLAY");
-    this.setupNewGame();
+    if (this.state.mapID === '') {
+      this.setupNewGame();
+    }
+
 
     //this.cameraSymbol = new DisplaySymbol({chr:'@', fg:'#eb4'});
   }
@@ -132,7 +135,7 @@ export class PlayMode extends UIMode {
 
 
       // MOVEMENT WITH NUMPAD KEYS
-      else if (evt.key == '4') {
+      else if (evt.key == '4' || evt.key == 'a') {
         this.moveAvatar(-1,0);
         return true;
       }
@@ -140,7 +143,7 @@ export class PlayMode extends UIMode {
         this.moveAvatar(-1, -1);
         return true;
       }
-      else if (evt.key == '8') {
+      else if (evt.key == '8' || evt.key == 'w') {
         this.moveAvatar(0, -1);
         return true;
       }
@@ -148,7 +151,7 @@ export class PlayMode extends UIMode {
         this.moveAvatar(1, -1);
         return true;
       }
-      else if (evt.key == '6') {
+      else if (evt.key == '6' || evt.key == 'd') {
         this.moveAvatar(1, 0);
         return true;
       }
@@ -156,7 +159,7 @@ export class PlayMode extends UIMode {
         this.moveAvatar(1,1);
         return true;
       }
-      else if (evt.key == '2') {
+      else if (evt.key == '2' || evt.key == 's') {
         this.moveAvatar(0, 1);
         return true;
       }
@@ -176,7 +179,6 @@ export class PlayMode extends UIMode {
       //this.getAvatar().moveBy(dx,dy);
       console.log("move");
       this.moveCameraToAvatar();
-      this.getAvatar().addTime(1);
       return true;
     }
       console.log("don't move");
@@ -299,7 +301,6 @@ export class PersistenceMode extends UIMode {
     clearDataStore();
     DATASTORE.GAME = this.game;
     DATASTORE.ID_SEQ = state.ID_SEQ;
-    this.game.fromJSON(state.GAME);
 
     for (let mapID in state.MAPS) {
       let mapData = JSON.parse(state.MAPS[mapID]);
@@ -307,6 +308,13 @@ export class PersistenceMode extends UIMode {
       DATASTORE.MAPS[mapID] = MapMaker(mapData);
       DATASTORE.MAPS[mapID].build();
     }
+
+    for (let savedEntityId in state.ENTITIES) {
+      let entState = JSON.parse(state.ENTITIES[savedEntityId]);
+      EntityFactory.create(entState.templateName,entState);
+    }
+
+    this.game.fromJSON(state.GAME);
 
     this.game.switchMode('play');
 

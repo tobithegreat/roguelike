@@ -169,7 +169,7 @@ let TILE_GRID_GENERATOR = {
      let gen = new ROT.Map.Cellular(xd, yd, { connected: true });
      let origRngState = ROT.RNG.getState();
      ROT.RNG.setState(rngState);
-     gen.randomize(.10);
+     gen.randomize(.35);
      gen.create();
 
     gen.connect(function(x,y,isWall) {

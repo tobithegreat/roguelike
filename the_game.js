@@ -1442,7 +1442,8 @@ function clearDataStore() {
   exports.DATASTORE = DATASTORE = {
     GAME: '',
     ID_SEQ: 1,
-    MAPS: {}
+    MAPS: {},
+    ENTITIES: {}
   };
 }
 
@@ -15358,8 +15359,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'setupNewGame',
     value: function setupNewGame() {
       var m = (0, _Map.MapMaker)({
-        xdim: 20,
-        ydim: 20 });
+        xdim: 40,
+        ydim: 40 });
       this.state.mapID = m.getID();
       _message.Message.send("building the map...");
       this.game.renderMessage();
@@ -15372,7 +15373,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       this.moveCameraToAvatar();
 
       // Populate map with moss
-      for (var i = 0; i < 2; i++) {
+      for (var i = 0; i < 10; i++) {
         var t = _entityTemplate.EntityFactory.create('moss');
         m.addEntityAtRandomPos(t);
       }
@@ -15381,7 +15382,9 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'enter',
     value: function enter() {
       _message.Message.send("entering PLAY");
-      this.setupNewGame();
+      if (this.state.mapID === '') {
+        this.setupNewGame();
+      }
 
       //this.cameraSymbol = new DisplaySymbol({chr:'@', fg:'#eb4'});
     }
@@ -15420,25 +15423,25 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         }
 
         // MOVEMENT WITH NUMPAD KEYS
-        else if (evt.key == '4') {
+        else if (evt.key == '4' || evt.key == 'a') {
             this.moveAvatar(-1, 0);
             return true;
           } else if (evt.key == '7') {
             this.moveAvatar(-1, -1);
             return true;
-          } else if (evt.key == '8') {
+          } else if (evt.key == '8' || evt.key == 'w') {
             this.moveAvatar(0, -1);
             return true;
           } else if (evt.key == '9') {
             this.moveAvatar(1, -1);
             return true;
-          } else if (evt.key == '6') {
+          } else if (evt.key == '6' || evt.key == 'd') {
             this.moveAvatar(1, 0);
             return true;
           } else if (evt.key == '3') {
             this.moveAvatar(1, 1);
             return true;
-          } else if (evt.key == '2') {
+          } else if (evt.key == '2' || evt.key == 's') {
             this.moveAvatar(0, 1);
             return true;
           } else if (evt.key == '1') {
@@ -15457,7 +15460,6 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         //this.getAvatar().moveBy(dx,dy);
         console.log("move");
         this.moveCameraToAvatar();
-        this.getAvatar().addTime(1);
         return true;
       }
       console.log("don't move");
@@ -15623,7 +15625,6 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       (0, _datastore.clearDataStore)();
       _datastore.DATASTORE.GAME = this.game;
       _datastore.DATASTORE.ID_SEQ = state.ID_SEQ;
-      this.game.fromJSON(state.GAME);
 
       for (var mapID in state.MAPS) {
         var mapData = JSON.parse(state.MAPS[mapID]);
@@ -15631,6 +15632,13 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         _datastore.DATASTORE.MAPS[mapID] = (0, _Map.MapMaker)(mapData);
         _datastore.DATASTORE.MAPS[mapID].build();
       }
+
+      for (var savedEntityId in state.ENTITIES) {
+        var entState = JSON.parse(state.ENTITIES[savedEntityId]);
+        _entityTemplate.EntityFactory.create(entState.templateName, entState);
+      }
+
+      this.game.fromJSON(state.GAME);
 
       this.game.switchMode('play');
 
@@ -15894,7 +15902,7 @@ var TILE_GRID_GENERATOR = {
     var gen = new _rotJs2.default.Map.Cellular(xd, yd, { connected: true });
     var origRngState = _rotJs2.default.RNG.getState();
     _rotJs2.default.RNG.setState(rngState);
-    gen.randomize(.10);
+    gen.randomize(.35);
     gen.create();
 
     gen.connect(function (x, y, isWall) {
@@ -16388,6 +16396,7 @@ var TimeTracker = exports.TimeTracker = {
 
   LISTENERS: {
     'turnTaken': function turnTaken(evtData) {
+      console.log("turn");
       this.addTime(evtData.timeUsed);
     }
   }

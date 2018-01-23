@@ -42,6 +42,7 @@ export let TimeTracker = {
 
   LISTENERS: {
     'turnTaken': function(evtData) {
+      console.log("turn");
       this.addTime(evtData.timeUsed);
     }
   }
