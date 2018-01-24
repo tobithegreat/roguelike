@@ -82,6 +82,9 @@ export class Entity extends MixableSymbol {
     return JSON.stringify(this.state);
   }
 
+  fromState(state) {
+    this.state = state;
+  }
 
 
 

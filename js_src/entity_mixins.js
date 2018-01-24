@@ -1,4 +1,8 @@
 import {Message} from './message.js';
+import {SCHEDULER,TIME_ENGINE} from './timing.js';
+import * as U from './util.js';
+import {DATASTORE} from './datastore.js';
+
 
 export let _exampleMixin = {
   META: {
@@ -246,13 +250,15 @@ export let WalkerCorporeal = {
     },
   },
   LISTENERS: {
-
+    'walkAttempt': function(evtData) {
+      this.tryWalk(evtData.dx,evtData.dy);
+    }
   }
 
 };
 
 export let ActorWanderer = {
-  META: {
+  META:{
     mixinName: 'ActorWanderer',
     mixinGroupName: 'Actor',
     stateNamespace: '_ActorWanderer',
@@ -261,17 +267,50 @@ export let ActorWanderer = {
       actingState: false,
       currentActionDuration: 1000
     },
-    initialize: function() {
-      SCHEDULER.add(this, true, randomInt(2, this.getBaseActionDuration()));
+    initialize: function(template) {
+      SCHEDULER.add(this,true,U.randomInt(2,this.state._ActorWanderer.baseActionDuration));
     }
   },
   METHODS:{
-    act: function(p) {
-      TIME_ENGINE.lock();
-      let dx = randomInt(-1,1);
-      let dy = randomInt(-1,1);
-      this.raiseMixinEvent("walkAttempt", {'dx': dx, 'dy': dy});
-      TIME_ENGINE.unlock;
+    getBaseActionDuration: function () {
+      return this.state._ActorWanderer.baseActionDuration;
+    },
+    setBaseActionDuration: function (n) {
+      this.state._ActorWanderer.baseActionDuration = n;
+    },
+    getCurrentActionDuration: function () {
+      return this.state._ActorWanderer.currentActionDuration;
+    },
+    setCurrentActionDuration: function (n) {
+      this.state._ActorWanderer.currentActionDuration = n;
+    },
+    isActing: function (state) {
+      if (state !== undefined) {
+        this.state._ActorWanderer.actingState = state;
+      }
+      return this.state._ActorWanderer.actingState;
+    },
+    act: function () {
+      if (this.isActing()) { return; } // a gate to deal with JS timing issues
+      this.isActing(true);
+
+      // do wandering here
+      let dx = U.randomInt(-1,1);
+      let dy = U.randomInt(-1,1);
+      // console.log(`wandering attempting walk: ${dx},${dy}`);
+      if (dx != 0 || dy !=0) {
+        this.raiseMixinEvent('walkAttempt',{'dx':dx,'dy':dy});
+      }
+      // TIME_ENGINE.lock();
+      SCHEDULER.setDuration(this.getCurrentActionDuration());
+      this.setCurrentActionDuration(this.getBaseActionDuration()+U.randomInt(-5,5));
+      this.isActing(false);
+    }
+  },
+  LISTENERS:{
+    'actionDone': function(evtData) {
+      // TIME_ENGINE.unlock();
+      console.log("end wanderer acting");
     }
   }
 };

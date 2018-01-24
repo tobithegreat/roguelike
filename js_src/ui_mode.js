@@ -3,6 +3,8 @@ import {DisplaySymbol} from './displaySymbol.js';
 import {MapMaker} from './Map.js';
 import {DATASTORE, clearDataStore} from './datastore.js';
 import {EntityFactory} from './entity-template.js';
+import {SCHEDULER,TIME_ENGINE,initTiming} from './timing.js';
+
 class UIMode {
   constructor(thegame) {
     console.log("created "+this.constructor.name);
@@ -20,7 +22,6 @@ class UIMode {
 
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
-      console.dir(this);
      this.game.switchMode('play');
     }
     return true;
@@ -69,18 +70,22 @@ export class PlayMode extends UIMode {
   }
 
   setupNewGame() {
+    initTiming();
+    DATASTORE.GAME = this.game;
+    console.log("TIMING");
+    let a = EntityFactory.create('avatar');
     let m = MapMaker({
       xdim: 40,
       ydim: 40});
+    m.addEntityAtRandomPos(a);
     this.state.mapID = m.getID();
     Message.send("building the map...");
     this.game.renderMessage();
-    m.build();
     this.state.camera_map_x = 0;
     this.state.camera_map_y = 0;
-    let a = EntityFactory.create('avatar');
+
     this.state.avatarID = a.getID();
-    m.addEntityAtRandomPos(a);
+
     this.moveCameraToAvatar();
 
     // Populate map with moss
@@ -88,17 +93,29 @@ export class PlayMode extends UIMode {
       let t = EntityFactory.create('moss');
       m.addEntityAtRandomPos(t);
     }
+
+    let key = EntityFactory.create('key');
+    m.addEntityAtRandomPos(key);
+    console.log("DONE");
   }
 
   enter() {
+    this.game.isPlaying = true;
+
     Message.send("entering PLAY");
     if (this.state.mapID === '') {
-      this.setupNewGame();
+      console.log("SETUP");
+      this.game.setupNewGame();
     }
+    console.dir(this.state);
+    // console.dir(TIME_ENGINE);
+    // TIME_ENGINE.unlock();
+  }
+
 
 
     //this.cameraSymbol = new DisplaySymbol({chr:'@', fg:'#eb4'});
-  }
+
 
   toJSON() {
     return JSON.stringify(this.state);
@@ -106,7 +123,6 @@ export class PlayMode extends UIMode {
 
   restoreFromState(stateData) {
     console.log("restoring play state from: ");
-    console.dir(stateData);
     this.state = JSON.parse(stateData);
   }
 
@@ -198,7 +214,7 @@ export class PlayMode extends UIMode {
     display.clear();
     display.drawText(0,0,"Avatar");
     display.drawText(0,2,"time: " + this.getAvatar().getTime());
-    // display.drawText(0,4,"Your HP: " + this.getAvatar().getCurHp());
+    display.drawText(0,4,"Your HP: " + this.getAvatar().getCurHp());
     //display.drawText(0,4,"loc:" + this.getAvatar().getPos());
   }
 
@@ -250,35 +266,40 @@ export class PersistenceMode extends UIMode {
     display.clear();
     display.drawText(3,2,"N for new game");
     display.drawText(3,3,"S to save game");
-    display.drawText(3,4,"L to load previously saved game");
-    display.drawText(3,5,"ESC to end game");
+    display.drawText(3,4,"R to resume a current game");
+    display.drawText(3,5,"L to load previously saved game");
+    display.drawText(3,6,"ESC to end game");
   }
 
   handleInput(eventType, evt) {
     if (eventType == 'keyup') {
 
-      if (evt.key == "N".toLowerCase()) {
-        //this.game.setupNewGame();
+      if (evt.key == "n") {
+        this.game.setupNewGame();
         this.game.switchMode('play');
-        console.dir("New Game");
         return true;
       }
-      else if (evt.key == "S".toLowerCase()) {
+      else if (evt.key == "s") {
         this.handleSave();
-        console.dir("Save Game");
+        this.game.switchMode('play');
         return true;
       }
-      else if (evt.key == "L".toLowerCase()) {
+      else if (evt.key == "l") {
         this.handleRestore();
 
         return true;
       }
-      else if (evt.key == "Escape") {
-        console.dir("End Game");
+      else if (evt.key == "r") {
+        Message.send("Resume Game");
+        this.game.switchMode("play");
         return true;
       }
+      else if (evt.key == "Escape") {
+        return true;
+      }
+
     }
-    return true;
+    return false;
   }
 
   handleSave() {
@@ -312,7 +333,6 @@ export class PersistenceMode extends UIMode {
     for (let savedEntityId in state.ENTITIES) {
       let entState = JSON.parse(state.ENTITIES[savedEntityId]);
       console.log("templateName: " + entState.templateName);
-      console.dir(entState);
       EntityFactory.create(entState.templateName,entState);
     }
 

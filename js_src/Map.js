@@ -11,6 +11,7 @@ export class Map {
     this.state.ydim = ydim || 1;
     this.state.mapType = mapType || 'basic types';
     //this.tileGrid = init2DArray(this.xdim, this.ydim, TILES.NULLTILE);
+    this.rng = ROT.RNG.clone();
     this.state.setupRngState = ROT.RNG.getState();
     this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
     this.state.id = uniqueID('map');
@@ -20,8 +21,9 @@ export class Map {
     console.dir(this);
   }
 
+
   build() {
-      this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
+    this.tileGrid = TILE_GRID_GENERATOR['basic types'](this.state.xdim, this.state.ydim, this.state.setupRngState);
   }
 
   getID() {
@@ -155,6 +157,10 @@ export class Map {
     return JSON.stringify(this.state);
   }
 
+  fromState(state) {
+    this.state = state;
+  }
+
   getTile(mapx, mapy) {
     if ((mapx < 0) || (mapx > this.state.xdim - 1) || (mapy < 0) || (mapy > this.state.ydim - 1)) {
       return TILES.NULLTILE;
@@ -184,15 +190,16 @@ let TILE_GRID_GENERATOR = {
 
  export function MapMaker(mapData) {
    let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
-   if (mapData.id) {
-     m.setID(mapData.ID);
-   }
+   if (mapData.id !== undefined) {
+     m.fromState(mapData);
+  }
+    m.build();
 
    DATASTORE.MAPS[m.getID()] = m;
 
-   if (mapData.setupRngState) {
-     m.setRngState(mapData.setupRngState);
-   }
+  //  if (mapData.setupRngState) {
+  //    m.setRngState(mapData.setupRngState);
+  //  }
 
    return m;
  }
