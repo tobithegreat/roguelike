@@ -71,7 +71,6 @@ export class PlayMode extends UIMode {
 
   setupNewGame() {
     initTiming();
-    DATASTORE.GAME = this.game;
     console.log("TIMING");
     let a = EntityFactory.create('avatar');
     let m = MapMaker({

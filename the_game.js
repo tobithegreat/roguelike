@@ -15130,7 +15130,28 @@ var Game = exports.Game = (_Game = {
   },
 
   init: function init() {
-    this.setupNewGame();
+
+    //this._randomSeed = 76250;
+    console.log("using random seed " + this._randomSeed);
+
+    this.display.main.o = new _rotJs2.default.Display({
+      width: this.display.main.w,
+      height: this.display.main.h,
+      spacing: this.display.SPACING
+    });
+
+    this.display.message.o = new _rotJs2.default.Display({
+      width: this.display.message.w,
+      height: this.display.message.h,
+      spacing: this.display.SPACING
+    });
+
+    this.display.avatar.o = new _rotJs2.default.Display({
+      width: this.display.avatar.w,
+      height: this.display.avatar.h,
+      spacing: this.display.SPACING
+    });
+
     this.setupModes();
     _datastore.DATASTORE.GAME = this;
     _message.Message.send("This is a message");
@@ -15194,27 +15215,9 @@ var Game = exports.Game = (_Game = {
 
   setupNewGame: function setupNewGame() {
     this._randomSeed = 5 + Math.floor(Math.random() * 100000);
-    //this._randomSeed = 76250;
-    console.log("using random seed " + this._randomSeed);
     _rotJs2.default.RNG.setSeed(this._randomSeed);
-
-    this.display.main.o = new _rotJs2.default.Display({
-      width: this.display.main.w,
-      height: this.display.main.h,
-      spacing: this.display.SPACING
-    });
-
-    this.display.message.o = new _rotJs2.default.Display({
-      width: this.display.message.w,
-      height: this.display.message.h,
-      spacing: this.display.SPACING
-    });
-
-    this.display.avatar.o = new _rotJs2.default.Display({
-      width: this.display.avatar.w,
-      height: this.display.avatar.h,
-      spacing: this.display.SPACING
-    });
+    console.dir(this.modes);
+    this.modes.play.setupNewGame();
   },
 
   renderMain: function renderMain() {
@@ -15400,7 +15403,6 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'setupNewGame',
     value: function setupNewGame() {
       (0, _timing.initTiming)();
-      _datastore.DATASTORE.GAME = this.game;
       console.log("TIMING");
       var a = _entityTemplate.EntityFactory.create('avatar');
       var m = (0, _Map.MapMaker)({
