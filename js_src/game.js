@@ -34,12 +34,38 @@ export let Game = {
   },
 
   init: function() {
-    this.setupNewGame();
+
+    //this._randomSeed = 76250;
+    console.log("using random seed "+this._randomSeed);
+
+
+    this.display.main.o = new ROT.Display({
+      width: this.display.main.w,
+      height: this.display.main.h,
+      spacing: this.display.SPACING
+    });
+
+    this.display.message.o = new ROT.Display({
+      width: this.display.message.w,
+      height: this.display.message.h,
+      spacing: this.display.SPACING
+    });
+
+    this.display.avatar.o = new ROT.Display({
+      width: this.display.avatar.w,
+      height: this.display.avatar.h,
+      spacing: this.display.SPACING
+    });
+
     this.setupModes();
     DATASTORE.GAME = this;
     Message.send("This is a message");
     this.switchMode('start');
 
+  },
+
+  devDumpDataStore() {
+    console.dir(DATASTORE);
   },
 
   getDisplay: function (displayId) {
@@ -94,34 +120,24 @@ export let Game = {
 
   setupNewGame: function() {
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
-    //this._randomSeed = 76250;
-    console.log("using random seed "+this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
-
-    this.display.main.o = new ROT.Display({
-      width: this.display.main.w,
-      height: this.display.main.h,
-      spacing: this.display.SPACING
-    });
-
-    this.display.message.o = new ROT.Display({
-      width: this.display.message.w,
-      height: this.display.message.h,
-      spacing: this.display.SPACING
-    });
-
-    this.display.avatar.o = new ROT.Display({
-      width: this.display.avatar.w,
-      height: this.display.avatar.h,
-      spacing: this.display.SPACING
-    });
-
+    console.dir(this.modes);
+    this.modes.play.setupNewGame();
   },
 
 
   renderMain: function() {
     console.log("renderMessage");
     this.curMode.render(this.display.main.o);
+    // let d = this.display.main.o;
+    // for (let i = 0; i < 10; i++) {
+    //   d.drawText(5,i+5,"hello world");
+    // }
+  },
+
+  renderAvatar: function() {
+    console.log("renderMessage");
+    this.curMode.renderAvatar(this.display.avatar.o);
     // let d = this.display.main.o;
     // for (let i = 0; i < 10; i++) {
     //   d.drawText(5,i+5,"hello world");
